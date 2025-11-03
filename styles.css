@@ -7,20 +7,21 @@
     --wh-color: rgb(228, 177, 129);
     --wh-txt: rgb(235, 200, 168);
     --pale-wh: rgba(228, 177, 129, 0.2);
+    --list-wh: rgba(228, 177, 129, 0.1);
     --pale-wh-hi: rgba(228, 177, 129, 0.5);
     --highlight: rgb(228, 177, 129);
 }
 
 body {
     background-color: var(--bg-color);
-    font-size: 20px;
     height: 100vh;
     margin: 0;
 }
 
 body, button, input, select {
     font-family: "Georgia", "Arial", sans-serif;
-    font-size: 16px;
+    font-size: 18px;
+    color: var(--wh-txt);
 }
 
 .layout {
@@ -31,31 +32,45 @@ body, button, input, select {
     padding: 20px;
 }
 
+/* */
+/* */
+/* Control Panel */
+/* */
+/* */
+
 .control {
     display: flex;
     flex-direction: column;
     flex: 0 0 300px;
+    overflow-y: auto;
+    
     border-radius: 8px;
     border: 1px solid var(--wh-color);
     padding: 10px;
 }
 
+
+/* */
+/* Control Buttons */
+/* */
+
+
 .control-buttons {
     display: flex;
     justify-content: space-evenly;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--pale-wh-hi);
     margin-bottom: 10px;
     gap: 10px;
 }
 
-.control-button {
+.control-button, .listbox button {
     width: 100%;
     padding: 6px 10px;
+
     background-color: var(--pale-wh);
-    color: var(--highlight);
+
     border: none;
     border-radius: 8px;
+    cursor: pointer;
 }
 
 .control-button:hover {
@@ -68,6 +83,67 @@ body, button, input, select {
     color: var(--bg-color);
 }
 
+
+/* */
+/* Control List */
+/* */
+
+.control-list {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.list-sel {
+    flex: 0.8;
+    width: 100%;
+    padding: 5px;
+    margin: 0px;
+    list-style: none;
+
+    background-color: var(--bg-color);
+
+    border: 1px solid var(--pale-wh-hi);
+    border-radius: 10px;
+}
+
+.list-sel li {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.list-sel li:hover {
+    background-color: var(--pale-wh);
+}
+
+.listbox {
+    flex: 1.2;
+    background-color: var(--list-wh);
+    border-radius: 10px;
+}
+
+.listbox button {
+    width: 100%;
+}
+
+.listbox button:hover {
+    background-color: var(--pale-wh-hi);
+    color: var(--highlight);
+}
+
+.listbox button:active {
+    background-color: var(--wh-color);
+    color: var(--bg-color);
+}
+
+
+/* */
+/* */
+/* Main */
+/* */
+/* */
 
 
 main {
