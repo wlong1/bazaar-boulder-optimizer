@@ -10,19 +10,22 @@
     <div class="layout">
         <div class="control">
             <div class="control-buttons">
-                <button class="control-button button-items">Items</button>
-                <button class="control-button button-skills">Skills</button>
+                <button class="control-button active" id="control-items">Items</button>
+                <button class="control-button" id="control-skills">Skills</button>
             </div>
-            <div class="control-list control-items">
+            <div class="control-list" id="control-items-panel">
                 <ul class="list-sel" id="items" multiple>
                     <li data-value="boulder">Boulder</li>
                 </ul>
+                <div class="space-counter">
+                    <span class="label">Space:</span>
+                    <span class="count"><span id="current-count">3</span>/20</span>
+                </div>
                 <div class="listbox items">
                     <button class="list-item" value="boulder">Boulder</button>
                 </div>
             </div>
-            <!--
-            <div class="control-list control-skills">
+            <div class="control-list hidden" id="control-skills-panel">
                 <ul class="list-sel" id="skills" multiple>
                     <li data-value="alacrity">alacrity</li>
                 </ul>
@@ -30,7 +33,6 @@
                     <button class="list-skill" value="alacrity">alacrity</button>
                 </div>
             </div>
-            -->
         </div>
 
         <main class="main">
@@ -46,4 +48,5 @@
         </main>
     </div>
 </body>
+<script src="control.js" defer></script>
 </html>

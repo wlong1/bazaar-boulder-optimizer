@@ -32,6 +32,10 @@ body, button, input, select {
     padding: 20px;
 }
 
+.hidden {
+    display: none !important;
+}
+
 /* */
 /* */
 /* Control Panel */
@@ -78,11 +82,27 @@ body, button, input, select {
     color: var(--wh-txt);
 }
 
-.control-button:active {
+.control-button.active {
     background-color: var(--wh-color);
     color: var(--bg-color);
 }
 
+.space-counter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  font-weight: 500;
+  padding: 0px 85px;
+}
+
+.space-counter .label {
+  text-align: left;
+}
+
+.space-counter .count {
+  text-align: right;
+}
 
 /* */
 /* Control List */
