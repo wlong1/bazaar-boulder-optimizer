@@ -1,8 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const btnItems = document.querySelector('#control-items');
-    const btnSkills = document.querySelector('#control-skills');
-    const panelItems = document.querySelector('#control-items-panel');
-    const panelSkills = document.querySelector('#control-skills-panel');
+export function initControls(root) {
+    const btnItems = root.querySelector('#control-items');
+    const btnSkills = root.querySelector('#control-skills');
+    const panelItems = root.querySelector('#control-items-panel');
+    const panelSkills = root.querySelector('#control-skills-panel');
 
     function toggleView(showList, hideList, activeBtn, inactiveBtn) {
         showList.classList.remove('hidden');
@@ -18,4 +18,4 @@ document.addEventListener('DOMContentLoaded', () => {
     btnSkills.addEventListener('click', () => {
         toggleView(panelSkills, panelItems, btnSkills, btnItems);
     });
-});
+};
