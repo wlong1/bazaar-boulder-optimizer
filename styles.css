@@ -142,10 +142,12 @@ body, button, input, select {
     flex: 1.2;
     background-color: var(--list-wh);
     border-radius: 10px;
+    overflow: hidden;
 }
 
 .listbox button {
     width: 100%;
+    border-radius: 0px;
 }
 
 .listbox button:hover {
