@@ -56,16 +56,60 @@ class Modifier {
     }
 }
 
+class Time {
+    constructor(cooldown, clock) {
+        this.cooldown = cooldown;
+        this.clock = clock;
+        this.haste = 0;
+        this.slow = 0;
+        this.freeze = 0;
+    }
+
+    addHaste(amount){ this.haste += amount; }
+    addSlow(amount){ this.haste += amount; }
+    addFreeze(amount){ this.freeze += amount; }
+
+    tick() {
+        let gain = 1
+
+        if (this.haste > 0){
+            this.haste -= 1;
+            gain *= 2;
+        }
+        if (this.slow > 0) {
+            this.slow -= 1;
+            gain /= 2;
+        }
+        if (this.frozen){
+            this.frozen -= 1;
+            gain = 0;
+        }
+
+        this.clock += gain;
+
+        return (this.clock >= this.cooldown) && (this.freeze == 0);
+    }
+
+    clear() {
+        this.clock = 0;
+        this.ready = false;
+    }
+}
+
 class Item {
     constructor({
         id = null,
         name = '',
+        usable = true,
+        cooldown = 0,
+        clock = 0,
         baseEffects = [],
         scaleMods = []
     } = {}) {
 
     this.id = id;
     this.name = name;
+    this.time = new Time(cooldown, clock);
     this.baseEffects = baseEffects;
     this.scaleMods = scaleMods;    // fn to apply to base effects, never need to be removed
     this.flatMods = {};     // Flat modifiers i.e. { damage: +0, shield: -5 }
@@ -106,6 +150,7 @@ class Item {
     }
 
     use(context) {
+        this.time.clear();
         return this.computeEffects(context);
     }
 }
