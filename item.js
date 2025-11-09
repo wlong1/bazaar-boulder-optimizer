@@ -69,7 +69,7 @@ class Time {
     addSlow(amount){ this.haste += amount; }
     addFreeze(amount){ this.freeze += amount; }
 
-    tick() {
+    pass() {
         let gain = 1
 
         if (this.haste > 0){
@@ -109,7 +109,9 @@ class Item {
 
     this.id = id;
     this.name = name;
+    this.usable = usable;
     this.time = new Time(cooldown, clock);
+    
     this.baseEffects = baseEffects;
     this.scaleMods = scaleMods;    // fn to apply to base effects, never need to be removed
     this.flatMods = {};     // Flat modifiers i.e. { damage: +0, shield: -5 }
@@ -126,17 +128,16 @@ class Item {
         this.postMods[type] = mod;
     }
     removePost(type, mod){
-        delete this.flatMods[key];
+        delete this.postMods[key];
     }
 
-    /*
-    1. Calculate base value for effect
-    2. Apply modifiers to it
-    3. Calculate extra effects
-    4. Apply modifiers to bonus effects
-    */
-
     computeEffects(context = {}){
+        /*
+        1. Calculate base value for effect
+        2. Apply modifiers to it
+        3. Calculate extra effects
+        4. Apply modifiers to bonus effects
+        */
         return this.baseEffects.map(base => {
             let eff = base.clone();
 
@@ -153,4 +154,12 @@ class Item {
         this.time.clear();
         return this.computeEffects(context);
     }
+
+    tick(context) {
+        if (this.usable && this.time.pass()){
+            return this.use(context);
+        }
+        return null;
+    }
+
 }
