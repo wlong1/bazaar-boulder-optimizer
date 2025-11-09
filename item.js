@@ -34,7 +34,7 @@ Add to result
 
 class Effect {
     constructor(type, value) {
-        this.type = type;   // Damage, Shield, Burn, etc
+        this.type = type;   // damage, shield, burn, etc
         this.value = value;
         this.extra = {};    // Effect scaling off of primary
     }
@@ -58,14 +58,54 @@ class Modifier {
 
 class Item {
     constructor({
-        name,
-        baseEffects = []     
+        id = null,
+        name = '',
+        baseEffects = [],
+        scaleMods = []
     } = {}) {
 
     this.id = id;
     this.name = name;
     this.baseEffects = baseEffects;
-    this.modifiers = {};    // { damage: +0, shield: -5 }
-    this.postMods = [];     // list of fn to apply to base effects
+    this.scaleMods = scaleMods;    // fn to apply to base effects, never need to be removed
+    this.flatMods = {};     // Flat modifiers i.e. { damage: +0, shield: -5 }
+    this.postMods = {};     // fn to apply to extra effects, using dict for easy remove
     };
+
+    addMod(key, mod){
+        this.flatMods[key] = (this.flatMods[key] || 0) + mod;
+    }
+    removeMod(key){
+        delete this.flatMods[key];
+    }
+    addPost(type, mod){
+        this.postMods[type] = mod;
+    }
+    removePost(type, mod){
+        delete this.flatMods[key];
+    }
+
+    /*
+    1. Calculate base value for effect
+    2. Apply modifiers to it
+    3. Calculate extra effects
+    4. Apply modifiers to bonus effects
+    */
+
+    computeEffects(context = {}){
+        return this.baseEffects.map(base => {
+            let eff = base.clone();
+
+            eff.value = typeof eff.value == 'function' ? eff.value(context) : eff.value;
+            eff = this.scaleMods.reduce((acc, m) => m.apply(acc), eff);
+            eff.value += this.flatMods[eff.type] || 0;
+            eff = Object.values(this.postMods).reduce((acc, m) => m.apply(acc), eff);
+
+            return eff;
+        })
+    }
+
+    use(context) {
+        return this.computeEffects(context);
+    }
 }
