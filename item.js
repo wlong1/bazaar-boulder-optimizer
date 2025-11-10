@@ -50,7 +50,7 @@ const effType = Object.freeze({
     FLY: 15
 });
 
-const target = Object.freeze({
+const targetType = Object.freeze({
     ENEMY: 0,
     SELF_HERO: 1,
     SELF_ITEM: 2,
@@ -66,13 +66,17 @@ const target = Object.freeze({
 // Classes
 
 class Effect {
-    constructor(type, value) {
+    constructor(type, value, target) {
         this.type = type;   // damage, shield, burn, etc
         this.value = value;
+        this.target = target;
     }
 
+    clone() { return new Effect(this.type, this.value, this.target); }
     getValue() { return this.value; }
+    setValue(val) {this.value = val; }
     getType() { return this.type; }
+    getTarget() { return this.target; }
     needsCompute() { return typeof value == "function"; }
 }
 
@@ -191,13 +195,15 @@ class Item {
         */
         const effects = {};
         this.baseEffects.map(base => {
-            const baseType = base.getType();
-            const baseValue = base.needsCompute() ? base.getValue()(context) : base.getValue();
+            const eff = base.clone()
+            const baseValue = eff.needsCompute() ? eff.getValue()(context) : eff.getValue();
+            const baseType = eff.getType();
+            const newValue = baseValue + (this.flatMods[baseType] ?? 0);
 
-            effects[baseType] = baseValue + (effects[baseType] ?? 0) + (this.flatMods[baseType] ?? 0);
+            eff.setValue(newValue);
 
-            Object.values(this.postMods).forEach(m => m(effects, this.flatMods));
         })
+        Object.values(this.postMods).forEach(m => m(effects, this.flatMods));
         return effects;
     }
 
@@ -237,6 +243,7 @@ let boulder = new Item({
     baseEffects: [new Effect(
         type = effType.DAMAGE,
         value = context => context.enemyHP,
+        target = targetType.ENEMY
     )]
 })
 
