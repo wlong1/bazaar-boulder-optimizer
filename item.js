@@ -32,6 +32,17 @@ Add to result
 
 */
 
+// Enums
+const speed = Object.freeze({
+    HASTE: 0,
+    SLOW: 1,
+    FREEZE: 2,
+    CHARGE: 3
+});
+
+
+// Classes
+
 class Effect {
     constructor(type, value) {
         this.type = type;   // damage, shield, burn, etc
@@ -58,19 +69,20 @@ class Modifier {
 
 class Time {
     constructor(cooldown, clock) {
-        this.cooldown = cooldown;
+        this.cooldown = cooldown * 2;   // To avoid 0.5's, just let's double it
         this.clock = clock;
         this.haste = 0;
         this.slow = 0;
         this.freeze = 0;
     }
 
-    addHaste(amount){ this.haste += amount; }
-    addSlow(amount){ this.haste += amount; }
-    addFreeze(amount){ this.freeze += amount; }
+    addHaste(amount){ this.haste += amount*2; }
+    addSlow(amount){ this.haste += amount*2; }
+    addFreeze(amount){ this.freeze += amount*2; }
+    addCharge(amount){ this.clock += amount*2; }
 
     pass() {
-        let gain = 1
+        let gain = 2;
 
         if (this.haste > 0){
             this.haste -= 1;
@@ -111,7 +123,7 @@ class Item {
     this.name = name;
     this.usable = usable;
     this.time = new Time(cooldown, clock);
-    
+
     this.baseEffects = baseEffects;
     this.scaleMods = scaleMods;    // fn to apply to base effects, never need to be removed
     this.flatMods = {};     // Flat modifiers i.e. { damage: +0, shield: -5 }
@@ -127,8 +139,22 @@ class Item {
     addPost(type, mod){
         this.postMods[type] = mod;
     }
-    removePost(type, mod){
+    removePost(key){
         delete this.postMods[key];
+    }
+    applyTime(type, amount){
+        switch (type) {
+            case speed.HASTE:
+                this.time.addHaste(amount);
+            case speed.SLOW:
+                this.time.addSlow(amount);
+            case speed.FREEZE:
+                this.time.addFreeze(amount);
+            case speed.CHARGE:
+                this.time.addCharge(amount);
+            default:
+                console.log(`Error: applyTime with ${type} ${amount}`)
+        }
     }
 
     computeEffects(context = {}){
