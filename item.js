@@ -32,12 +32,34 @@ Add to result
 
 */
 
-// Enums
-const speed = Object.freeze({
-    HASTE: 0,
-    SLOW: 1,
-    FREEZE: 2,
-    CHARGE: 3
+// Enum
+const effType = Object.freeze({
+    // Applied to characters
+    DAMAGE: 0,
+    BURN: 1,
+    POISON: 2,
+    SHIELD: 3,
+    HEAL: 4,
+    REGEN: 5,
+    // Applied to items
+    TIME: 10,   // For reference
+    HASTE: 11,
+    SLOW: 12,
+    FREEZE: 13,
+    CHARGE: 14,
+    FLY: 15
+});
+
+const target = Object.freeze({
+    ENEMY: 0,
+    SELF_HERO: 1,
+    SELF_ITEM: 2,
+    LEFT: 3,
+    RIGHT: 4,
+    ADJACENT: 5,
+    RANDOM: 6,
+    LEFTMOST: 7,
+    RIGHTMOST: 8
 });
 
 
@@ -47,25 +69,22 @@ class Effect {
     constructor(type, value) {
         this.type = type;   // damage, shield, burn, etc
         this.value = value;
-        this.extra = {};    // Effect scaling off of primary
     }
 
-    clone() {
-        return new Effect(this.type, this.value);
-    }
+    getValue() { return this.value; }
+    getType() { return this.type; }
+    needsCompute() { return typeof value == "function"; }
 }
 
+/*
 class Modifier {
-    constructor(id, fn, type) {
-        this.id = id;
+    constructor(fn) {
         this.fn = fn;
-        this.type = type;   // Stack types together
     }
 
-    apply(effect) {
-        return this.fn(effect);
-    }
+    apply(effect) { return this.fn(effect); }
 }
+*/
 
 class Time {
     constructor(cooldown, clock) {
@@ -98,7 +117,6 @@ class Time {
         }
 
         this.clock += gain;
-
         return (this.clock >= this.cooldown) && (this.freeze == 0);
     }
 
@@ -116,7 +134,8 @@ class Item {
         cooldown = 0,
         clock = 0,
         baseEffects = [],
-        scaleMods = []
+        scaleMods = [],
+        tags = []
     } = {}) {
 
     this.id = id;
@@ -125,35 +144,41 @@ class Item {
     this.time = new Time(cooldown, clock);
 
     this.baseEffects = baseEffects;
-    this.scaleMods = scaleMods;    // fn to apply to base effects, never need to be removed
+    //this.scaleMods = scaleMods;    // fn to apply to base effects, never need to be removed
     this.flatMods = {};     // Flat modifiers i.e. { damage: +0, shield: -5 }
     this.postMods = {};     // fn to apply to extra effects, using dict for easy remove
+
+    this.tags = tags;
     };
 
-    addMod(key, mod){
+    addFlatMod(key, mod){
         this.flatMods[key] = (this.flatMods[key] || 0) + mod;
     }
-    removeMod(key){
+    removeFlatMod(key){
         delete this.flatMods[key];
     }
-    addPost(type, mod){
+    addPostMod(type, mod){
         this.postMods[type] = mod;
     }
-    removePost(key){
+    removePostMod(key){
         delete this.postMods[key];
     }
     applyTime(type, amount){
         switch (type) {
-            case speed.HASTE:
+            case effType.HASTE:
                 this.time.addHaste(amount);
-            case speed.SLOW:
+                break;
+            case effType.SLOW:
                 this.time.addSlow(amount);
-            case speed.FREEZE:
+                break;
+            case effType.FREEZE:
                 this.time.addFreeze(amount);
-            case speed.CHARGE:
+                break;
+            case effType.CHARGE:
                 this.time.addCharge(amount);
+                break;
             default:
-                console.log(`Error: applyTime with ${type} ${amount}`)
+                console.log(`Error: applyTime with ${effType[type]} ${amount}`)
         }
     }
 
@@ -161,31 +186,79 @@ class Item {
         /*
         1. Calculate base value for effect
         2. Apply modifiers to it
-        3. Calculate extra effects
+        3. Compute dependent bonus effects
         4. Apply modifiers to bonus effects
         */
-        return this.baseEffects.map(base => {
-            let eff = base.clone();
+        const effects = {};
+        this.baseEffects.map(base => {
+            const baseType = base.getType();
+            const baseValue = base.needsCompute() ? base.getValue()(context) : base.getValue();
 
-            eff.value = typeof eff.value == 'function' ? eff.value(context) : eff.value;
-            eff = this.scaleMods.reduce((acc, m) => m.apply(acc), eff);
-            eff.value += this.flatMods[eff.type] || 0;
-            eff = Object.values(this.postMods).reduce((acc, m) => m.apply(acc), eff);
+            effects[baseType] = baseValue + (effects[baseType] ?? 0) + (this.flatMods[baseType] ?? 0);
 
-            return eff;
+            Object.values(this.postMods).forEach(m => m(effects));
         })
+        return effects;
     }
 
     use(context) {
+        console.log(`${this.name} used`)
         this.time.clear();
         return this.computeEffects(context);
     }
 
     tick(context) {
-        if (this.usable && this.time.pass()){
+        if (!this.usable) {
+            console.log(`${this.name} is unusable`)
+            return null
+        }
+        if (this.time.pass()){
             return this.use(context);
         }
+        console.log(`${this.name} is not ready`)
         return null;
     }
 
 }
+
+
+/* Test */
+let enemyHP = 10000;
+let context = {
+    enemyHP: enemyHP
+}
+
+let boulder = new Item({
+    id: 0, 
+    name: 'Boulder',
+    usable: true,
+    cooldown: 20*10,
+    clock: 0,
+    baseEffects: [new Effect(
+        type = effType.DAMAGE,
+        value = context => context.enemyHP,
+    )]
+})
+
+let result;
+result = boulder.tick(context);
+console.log(result);
+
+boulder.applyTime(effType.CHARGE, 20*10);
+result = boulder.tick(context);
+console.log(result);
+
+result = boulder.tick(context);
+console.log(result);
+
+// Enchant
+boulder.addPostMod(
+    type = "enchant",
+    mod = effects =>{
+            value = effects[effType.DAMAGE] * 0.05
+            effects[effType.BURN] = value
+        }
+)
+
+result = boulder.use(context);
+console.log(result);
