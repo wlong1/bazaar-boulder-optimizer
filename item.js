@@ -74,10 +74,10 @@ class Effect {
 
     clone() { return new Effect(this.type, this.value, this.target); }
     getValue() { return this.value; }
-    setValue(val) {this.value = val; }
+    setValue(val) { this.value = val; }
     getType() { return this.type; }
     getTarget() { return this.target; }
-    needsCompute() { return typeof value == "function"; }
+    needsCompute() { return typeof this.value == "function"; }
 }
 
 /*
@@ -115,7 +115,7 @@ class Time {
             this.slow -= 1;
             gain /= 2;
         }
-        if (this.frozen){
+        if (this.freeze > 0){
             this.frozen -= 1;
             gain = 0;
         }
@@ -126,7 +126,6 @@ class Time {
 
     clear() {
         this.clock = 0;
-        this.ready = false;
     }
 }
 
@@ -159,7 +158,7 @@ class Item {
         this.flatMods[type] = (this.flatMods[type] || 0) + mod;
     }
     removeFlatMod(type){
-        delete this.flatMods[key];
+        delete this.flatMods[type];
     }
     addPostMod(key, mod){
         this.postMods[key] = mod;
@@ -194,14 +193,14 @@ class Item {
         4. Apply modifiers to bonus effects
         */
         const effects = {};
-        this.baseEffects.map(base => {
+        this.baseEffects.forEach(base => {
             const eff = base.clone()
-            const baseValue = eff.needsCompute() ? eff.getValue()(context) : eff.getValue();
             const baseType = eff.getType();
+            const baseValue = eff.needsCompute() ? eff.getValue()(context) : eff.getValue();
             const newValue = baseValue + (this.flatMods[baseType] ?? 0);
 
             eff.setValue(newValue);
-
+            effects[baseType] = eff;
         })
         Object.values(this.postMods).forEach(m => m(effects, this.flatMods));
         return effects;
@@ -241,9 +240,9 @@ let boulder = new Item({
     cooldown: 20*10,
     clock: 0,
     baseEffects: [new Effect(
-        type = effType.DAMAGE,
-        value = context => context.enemyHP,
-        target = targetType.ENEMY
+        effType.DAMAGE,
+        context => context.enemyHP,
+        targetType.ENEMY
     )]
 })
 
@@ -259,26 +258,33 @@ result = boulder.tick(context);
 console.log(result);
 
 // Enchant
+console.log("Enchant:");
 boulder.addPostMod(
     type = "enchant",
-    mod = (effects, flat) =>{
-            const value = Math.round(effects[effType.DAMAGE] * 0.05);
-            effects[effType.BURN] = value + (flat[effType.BURN] ?? 0)
-        }
+    mod = (effects, flats) =>{
+        const base = effects[effType.DAMAGE];
+        const newValue = Math.round(base.getValue() * 0.05) + (flats[effType.BURN] ?? 0);
+        effects[effType.BURN] = new Effect (
+            effType.BURN,
+            newValue,
+            targetType.ENEMY
+        )
+    }
 )
 
 result = boulder.use(context);
 console.log(result);
 
 // Flat mods
+console.log("Flats:");
 boulder.addFlatMod(
-    type = effType.BURN,
-    mod = 3
+    effType.BURN,
+    3
 )
 
 boulder.addFlatMod(
-    type = effType.DAMAGE,
-    mod = 20
+    effType.DAMAGE,
+    20
 )
 
 /*      Expected:
