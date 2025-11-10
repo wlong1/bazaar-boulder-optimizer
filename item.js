@@ -96,7 +96,7 @@ class Time {
     }
 
     addHaste(amount){ this.haste += amount*2; }
-    addSlow(amount){ this.haste += amount*2; }
+    addSlow(amount){ this.slow += amount*2; }
     addFreeze(amount){ this.freeze += amount*2; }
     addCharge(amount){ this.clock += amount*2; }
 
@@ -151,14 +151,14 @@ class Item {
     this.tags = tags;
     };
 
-    addFlatMod(key, mod){
-        this.flatMods[key] = (this.flatMods[key] || 0) + mod;
+    addFlatMod(type, mod){
+        this.flatMods[type] = (this.flatMods[type] || 0) + mod;
     }
-    removeFlatMod(key){
+    removeFlatMod(type){
         delete this.flatMods[key];
     }
-    addPostMod(type, mod){
-        this.postMods[type] = mod;
+    addPostMod(key, mod){
+        this.postMods[key] = mod;
     }
     removePostMod(key){
         delete this.postMods[key];
@@ -196,7 +196,7 @@ class Item {
 
             effects[baseType] = baseValue + (effects[baseType] ?? 0) + (this.flatMods[baseType] ?? 0);
 
-            Object.values(this.postMods).forEach(m => m(effects));
+            Object.values(this.postMods).forEach(m => m(effects, this.flatMods));
         })
         return effects;
     }
@@ -254,11 +254,31 @@ console.log(result);
 // Enchant
 boulder.addPostMod(
     type = "enchant",
-    mod = effects =>{
-            value = effects[effType.DAMAGE] * 0.05
-            effects[effType.BURN] = value
+    mod = (effects, flat) =>{
+            const value = Math.round(effects[effType.DAMAGE] * 0.05);
+            effects[effType.BURN] = value + (flat[effType.BURN] ?? 0)
         }
 )
+
+result = boulder.use(context);
+console.log(result);
+
+// Flat mods
+boulder.addFlatMod(
+    type = effType.BURN,
+    mod = 3
+)
+
+boulder.addFlatMod(
+    type = effType.DAMAGE,
+    mod = 20
+)
+
+/*      Expected:
+10000 + 20 = 10020 damage
+10020 * 0.05 = 501
+501 + 3 = 504 burn
+*/
 
 result = boulder.use(context);
 console.log(result);
