@@ -51,30 +51,33 @@ const effType = Object.freeze({
 });
 
 const targetType = Object.freeze({
-    ENEMY: 0,
-    SELF_HERO: 1,
-    SELF_ITEM: 2,
-    LEFT: 3,
-    RIGHT: 4,
-    ADJACENT: 5,
-    RANDOM: 6,
-    LEFTMOST: 7,
-    RIGHTMOST: 8
+    ENEMY: 10,
+    SELF_HERO: 11,
+    SELF_ITEM: 12,
+    RANDOM: 13,
+    LEFTMOST: 14,
+    RIGHTMOST: 15
 });
 
 
 // Classes
 
 class Effect {
-    constructor(type, value, target) {
+    constructor(type, value, target, pick = 1, source = null) {
         this.type = type;   // damage, shield, burn, etc
         this.value = value;
         this.target = target;
+        this.pick = pick;   // for random i.e. haste (2) items, not multi
+        this.source = source;
     }
 
-    clone() { return new Effect(this.type, this.value, this.target); }
+    clone() {
+        return new Effect(this.type, this.value, this.target, this.pick, this.source);
+    }
     getValue() { return this.value; }
     setValue(val) { this.value = val; }
+    getSource() { return this.source; }
+    setSource(val) { this.source = val; }
     getType() { return this.type; }
     getTarget() { return this.target; }
     needsCompute() { return typeof this.value == "function"; }
@@ -99,10 +102,10 @@ class Time {
         this.freeze = 0;
     }
 
-    addHaste(amount){ this.haste += amount*2; }
-    addSlow(amount){ this.slow += amount*2; }
-    addFreeze(amount){ this.freeze += amount*2; }
-    addCharge(amount){ this.clock += amount*2; }
+    addHaste(amount){   this.haste += amount*2; }
+    addSlow(amount){    this.slow += amount*2; }
+    addFreeze(amount){  this.freeze += amount*2; }
+    addCharge(amount){  this.clock += amount*2; }
 
     pass() {
         let gain = 2;
@@ -131,14 +134,17 @@ class Time {
 
 class Item {
     constructor({
-        id = null,
+        id = null,      // Item index
         name = '',
         usable = true,
         cooldown = 0,
         clock = 0,
         baseEffects = [],
-        scaleMods = [],
-        tags = []
+        //scaleMods = [],
+        itemTags = new Set(),
+        typeTags = new Set(),
+        size = null,
+        multis = 1
     } = {}) {
 
     this.id = id;
@@ -151,7 +157,11 @@ class Item {
     this.flatMods = {};     // Flat modifiers i.e. { damage: +0, shield: -5 }
     this.postMods = {};     // fn to apply to extra effects, using dict for easy remove
 
-    this.tags = tags;
+    this.itemTags = itemTags;
+    this.typeTags = typeTags;
+    this.addedTags = new Set();
+    this.size = size;
+    this.multis = multis;
     };
 
     addFlatMod(type, mod){
@@ -166,6 +176,10 @@ class Item {
     removePostMod(key){
         delete this.postMods[key];
     }
+    getSize(){ return this.size; }
+    getMultis(){ return this.multis; }
+    getTags(){ return this.itemTags.union(this.typeTags); }
+
     applyTime(type, amount){
         switch (type) {
             case effType.HASTE:
@@ -202,7 +216,8 @@ class Item {
             eff.setValue(newValue);
             effects[baseType] = eff;
         })
-        Object.values(this.postMods).forEach(m => m(effects, this.flatMods));
+        Object.values(this.postMods).forEach(mod => mod(effects, this.flatMods));
+        Object.values(effects).forEach(eff => eff.setSource(this.id));
         return effects;
     }
 
