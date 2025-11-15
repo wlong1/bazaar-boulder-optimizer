@@ -33,7 +33,7 @@ Add to result
 */
 
 // Enum
-const effType = Object.freeze({
+export const effType = Object.freeze({
     // Applied to characters
     DAMAGE: 0,
     BURN: 1,
@@ -50,7 +50,7 @@ const effType = Object.freeze({
     FLY: 15
 });
 
-const targetType = Object.freeze({
+export const targetType = Object.freeze({
     ENEMY: 10,
     SELF_HERO: 11,
     SELF_ITEM: 12,
@@ -62,7 +62,7 @@ const targetType = Object.freeze({
 
 // Classes
 
-class Effect {
+export class Effect {
     constructor(type, value, target, pick = 1, source = null) {
         this.type = type;   // damage, shield, burn, etc
         this.value = value;
@@ -93,7 +93,7 @@ class Modifier {
 }
 */
 
-class Time {
+export class Time {
     constructor(cooldown, clock) {
         this.cooldown = cooldown * 2;   // To avoid 0.5's, just let's double it
         this.clock = clock;
@@ -119,7 +119,7 @@ class Time {
             gain /= 2;
         }
         if (this.freeze > 0){
-            this.frozen -= 1;
+            this.freeze -= 1;
             gain = 0;
         }
 
@@ -132,7 +132,7 @@ class Time {
     }
 }
 
-class Item {
+export class Item {
     constructor({
         id = null,      // Item index
         name = '',
@@ -241,72 +241,3 @@ class Item {
 
 }
 
-
-/* Test */
-let enemyHP = 10000;
-let context = {
-    enemyHP: enemyHP
-}
-
-let boulder = new Item({
-    id: 0, 
-    name: 'Boulder',
-    usable: true,
-    cooldown: 20*10,
-    clock: 0,
-    baseEffects: [new Effect(
-        effType.DAMAGE,
-        context => context.enemyHP,
-        targetType.ENEMY
-    )]
-})
-
-let result;
-result = boulder.tick(context);
-console.log(result);
-
-boulder.applyTime(effType.CHARGE, 20*10);
-result = boulder.tick(context);
-console.log(result);
-
-result = boulder.tick(context);
-console.log(result);
-
-// Enchant
-console.log("Enchant:");
-boulder.addPostMod(
-    type = "enchant",
-    mod = (effects, flats) =>{
-        const base = effects[effType.DAMAGE];
-        const newValue = Math.round(base.getValue() * 0.05) + (flats[effType.BURN] ?? 0);
-        effects[effType.BURN] = new Effect (
-            effType.BURN,
-            newValue,
-            targetType.ENEMY
-        )
-    }
-)
-
-result = boulder.use(context);
-console.log(result);
-
-// Flat mods
-console.log("Flats:");
-boulder.addFlatMod(
-    effType.BURN,
-    3
-)
-
-boulder.addFlatMod(
-    effType.DAMAGE,
-    20
-)
-
-/*      Expected:
-10000 + 20 = 10020 damage
-10020 * 0.05 = 501
-501 + 3 = 504 burn
-*/
-
-result = boulder.use(context);
-console.log(result);
