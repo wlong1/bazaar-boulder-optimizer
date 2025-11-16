@@ -65,7 +65,7 @@ export const targetType = Object.freeze({
 // Classes
 
 export class Effect {
-    constructor(type, value, target, pick = 1, source = null) {
+    constructor({type, value, target, pick = 1, source = null}={}) {
         this.type = type;   // damage, shield, burn, etc
         this.value = value;
         this.target = target;
@@ -74,8 +74,14 @@ export class Effect {
     }
 
     clone() {
-        return new Effect(this.type, this.value, this.target, this.pick, this.source);
-    }
+        return new Effect({
+            type: this.type,
+            value: this.value,
+            target: this.target,
+            pick: this.pick,
+            source: this.source
+        })};
+
     getValue() { return this.value; }
     setValue(val) { this.value = val; }
     getSource() { return this.source; }
@@ -85,15 +91,15 @@ export class Effect {
     needsCompute() { return typeof this.value == "function"; }
 }
 
-/*
-class Modifier {
-    constructor(fn) {
+
+class Listener {
+    constructor(condition, effect) {
         this.fn = fn;
     }
 
     apply(effect) { return this.fn(effect); }
 }
-*/
+
 
 export class Time {
     constructor(cooldown, clock) {
@@ -146,6 +152,7 @@ export class Item {
         itemTags = new Set(),
         typeTags = new Set(),
         size = null,
+        random = 0,
         multis = 1
     } = {}) {
 
@@ -163,6 +170,7 @@ export class Item {
     this.typeTags = typeTags;
     this.addedTags = new Set();
     this.size = size;
+    this.random = random;
     this.multis = multis;
     };
 

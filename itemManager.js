@@ -26,8 +26,8 @@ export class Context {
     addEnemyBurn(amount){ this.enemyBurn += amount; }
     addEnemyPoison(amount){ this.enemyPoison += amount; }
     addSelfShield(amount){ this.selfShield += amount; }
-    addSelfRegen(amount){ this.selfShield += amount; }
-    addSelfHeal(amount){ this.selfHpCur = Math.min(amount + this.selfHpCur, self.selfHpMax); }
+    addSelfRegen(amount){ this.selfRegen += amount; }
+    addSelfHeal(amount){ this.selfHpCur = Math.min(this.selfHpCur + amount, this.selfHpMax); }
 
     tick(time){
         // Burn applies twice a second
@@ -54,10 +54,12 @@ export class Context {
 export class Manager {
     constructor({
         items = [],
+        slots = {},
         limit = 20*10,
-        context = new Context,
+        context = new Context(),
     } = {}){
         this.items = items;
+        this.slots = slots;
         this.limit = limit;
         this.time = 0;
         this.context = context;
@@ -67,7 +69,7 @@ export class Manager {
 
     }
 
-    simulate(context){
+    simulate(){
         const results = [];
         const sandstorm = 30*10;
         let victory = false;
@@ -75,8 +77,8 @@ export class Manager {
         while (this.time <= this.limit && !victory){
             results.length = 0;
             for (const item of this.items){
-                let result = item.tick(context)
-                if (result) applyResult(result);
+                let result = item.tick(this.context)
+                if (result) this.applyResult(result);
             }
 
             if (this.time > sandstorm){

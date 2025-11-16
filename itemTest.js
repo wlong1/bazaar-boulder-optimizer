@@ -1,4 +1,4 @@
-import { Item } from "./item";
+import { Effect, Item } from "./item";
 import { Manager } from "./itemManager";
 
 let enemyHP = 10000;
@@ -12,12 +12,13 @@ let boulder = new Item({
     usable: true,
     cooldown: 20*10,
     clock: 0,
-    baseEffects: [new Effect(
-        effType.DAMAGE,
-        context => context.enemyHP,
-        targetType.ENEMY
+    baseEffects: [new Effect({
+        type: effType.DAMAGE,
+        value: context => context.enemyHP,
+        target: targetType.ENEMY}
     )]
 })
+
 
 
 function testItem(){
