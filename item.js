@@ -56,7 +56,9 @@ export const targetType = Object.freeze({
     SELF_ITEM: 12,
     RANDOM: 13,
     LEFTMOST: 14,
-    RIGHTMOST: 15
+    RIGHTMOST: 15,
+    LEFT: 16,
+    RIGHT: 17
 });
 
 
@@ -229,13 +231,13 @@ export class Item {
 
     tick(context) {
         if (!this.usable) {
-            console.log(`${this.name} is unusable`)
+            // console.log(`${this.name} is unusable`)
             return null
         }
         if (this.time.pass()){
             return this.use(context);
         }
-        console.log(`${this.name} is not ready`)
+        // console.log(`${this.name} is not ready`)
         return null;
     }
 
