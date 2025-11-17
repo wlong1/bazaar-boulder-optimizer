@@ -1,8 +1,8 @@
-import { Effect, Item } from "./item";
+import { effType, Effect, Item } from "./item";
 import { Context, Manager } from "./itemManager";
 
 let enemyHP = 10000;
-let context = new Context()
+let context = new Context({enemyHp: enemyHP})
 
 let boulder = new Item({
     id: 0, 
@@ -12,10 +12,32 @@ let boulder = new Item({
     clock: 0,
     baseEffects: [new Effect({
         type: effType.DAMAGE,
-        value: context => context.enemyHp,
+        amount: context => context.enemyHp,
         target: targetType.ENEMY}
     )]
 })
+
+let captainsWheel = new Item({
+    id: 1, 
+    name: "Captain's Wheel",
+    usable: true,
+    cooldown: 5*10,
+    clock: 0,
+    baseEffects: [
+        new Effect({
+        type: effType.HASTE,
+        amount: 3,
+        target: targetType.LEFT}),
+        new Effect({
+        type: effType.HASTE,
+        amount: 3,
+        target: targetType.RIGHT}
+    )]
+})
+
+function effFind(effects, type){
+    return effects.find(e => e.getType() === type);
+}
 
 function testItem(){
     let result;
@@ -34,13 +56,13 @@ function testItem(){
     boulder.addPostMod(
         "enchant",
         (effects, flats) =>{
-            const base = effects[effType.DAMAGE];
-            const newValue = Math.round(base.getValue() * 0.05) + (flats[effType.BURN] ?? 0);
-            effects[effType.BURN] = new Effect (
+            const base = effFind(effects, effType.BURN);
+            const newValue = Math.round(base.getAmount() * 0.05) + (flats[effType.BURN] ?? 0);
+            effects.push(new Effect (
                 effType.BURN,
                 newValue,
                 targetType.ENEMY
-            )
+            ))
         }
     )
 
@@ -71,13 +93,14 @@ function testItem(){
 }
 
 function testManager(){
-    let items = [boulder];
+    let items = [boulder, captainsWheel];
     let manager = new Manager({
         items: items,
         context: context
     });
 
-    manager.simulate();
+    res = manager.simulate();
+    console.log(res);
 }
 
 testManager();

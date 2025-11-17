@@ -84,12 +84,12 @@ export class Effect {
         })};
 
     getAmount() { return this.amount; }
-    getAmount(amount) { this.amount = amount; }
+    setAmount(amount) { this.amount = amount; }
     getSource() { return this.source; }
     setSource(index) { this.source = index; }
     getType() { return this.type; }
     getTarget() { return this.target; }
-    getPick() { return this.type; }
+    getPick() { return this.pick; }
     needsCompute() { return typeof this.amount == "function"; }
 }
 
@@ -194,6 +194,7 @@ export class Item {
     getTags(){ return this.itemTags.union(this.typeTags); }
 
     applyTime(type, amount){
+        console.log("APPLYING:", type, amount);
         switch (type) {
             case effType.HASTE:
                 this.time.addHaste(amount);
@@ -218,8 +219,10 @@ export class Item {
         2. Apply modifiers to it
         3. Compute dependent bonus effects
         4. Apply modifiers to bonus effects
+
+        Scaling effects should always be based off of the first element
         */
-        const effects = {};
+        const effects = [];
         this.baseEffects.forEach(base => {
             const eff = base.clone()
             const baseType = eff.getType();
@@ -227,10 +230,10 @@ export class Item {
             const newAmount = baseAmount + (this.flatMods[baseType] ?? 0);
 
             eff.setAmount(newAmount);
-            effects[baseType] = eff;
+            effects.push(eff);
         })
         Object.values(this.postMods).forEach(mod => mod(effects, this.flatMods));
-        Object.values(effects).forEach(eff => eff.setSource(this.id));
+        effects.forEach(eff => eff.setSource(this.id));
         return effects;
     }
 

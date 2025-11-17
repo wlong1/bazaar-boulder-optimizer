@@ -1,4 +1,4 @@
-import { Effect, effType, Item, targetType } from "./item";
+import { effType, targetType } from "./item";
 
 
 export class Context {
@@ -100,6 +100,7 @@ function nChooseK(arr, k) {
     return result;
 }
 
+
 export class Manager {
     constructor({
         items = [],
@@ -110,13 +111,13 @@ export class Manager {
         this.items = items;
         this.slots = slots;
         this.limit = limit;
-        this.time = 0;
+        this.time = 1;
         this.context = context;
     }
 
     applyResult(effect){
         const type = effect.getType();
-        const value = effect.getValue();
+        const amount = effect.getAmount();
         const target = effect.getTarget();
         const pick = effect.getPick();
         const source = effect.getSource();
@@ -132,30 +133,30 @@ export class Manager {
         RIGHT: 17
         */
         if (target <= targetType.SELF_HERO ){ // SELF_HERO is 11, ENEMY is 10
-            effectHeroMap[target][type](this.context, value)
+            effectHeroMap[target][type](this.context, amount)
         } else {
             switch (target) {
                 case targetType.SELF_ITEM:
-                    this.items[source].applyTime(type, value);
+                    this.items[source].applyTime(type, amount);
                     break;
                 case targetType.RANDOM:
                     const arr = nChooseK(this.items, pick)
-                    arr.forEach(index => this.items[index].applyTime(type, value));
+                    arr.forEach(index => this.items[index].applyTime(type, amount));
                     break;
                 case targetType.LEFTMOST:
-                    this.items[0].applyTime(type, value);
+                    this.items[0].applyTime(type, amount);
                     break;
                 case targetType.RIGHTMOST:
-                    this.items[this.items.length - 1].applyTime(type, value);
+                    this.items[this.items.length - 1].applyTime(type, amount);
                     break;
                 case targetType.LEFT:
                     if (source - 1 >= 0){
-                        this.items[source - 1]?.applyTime(type, value);
+                        this.items[source - 1]?.applyTime(type, amount);
                     }
                     break;
                 case targetType.RIGHT:
                     if (source + 1 < this.items.length){
-                        this.items[source + 1]?.applyTime(type, value);
+                        this.items[source + 1]?.applyTime(type, amount);
                     }
                     break;
             }
@@ -163,17 +164,18 @@ export class Manager {
     }
 
     simulate(){
-        const results = [];
+        const itemUses = [];
         const sandstorm = 30*10;
         let victory = false;
         
         while (this.time <= this.limit && !victory){
-            results.length = 0;
+
             for (const item of this.items){
                 let results = item.tick(this.context)
                 if (results) {
-                    for (const result of Object.values(results)){
+                    for (const result of results){
                     this.applyResult(result);
+                    itemUses.push([this.time, result])
                     }
                 }
             }
@@ -185,7 +187,7 @@ export class Manager {
             victory = this.context.tick(this.time);
             this.time += 1;
         }
-        console.log(results);
+        return [this.time, itemUses];
     }
 
 }
