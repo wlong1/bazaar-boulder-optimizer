@@ -32,6 +32,7 @@ Add to result
 
 */
 
+
 // Enum
 export const effType = Object.freeze({
     // Applied to characters
@@ -65,9 +66,9 @@ export const targetType = Object.freeze({
 // Classes
 
 export class Effect {
-    constructor({type, value, target, pick = 1, source = null}={}) {
+    constructor({type, amount, target, pick = 1, source = null}={}) {
         this.type = type;   // damage, shield, burn, etc
-        this.value = value;
+        this.amount = amount;
         this.target = target;
         this.pick = pick;   // for random i.e. haste (2) items, not multi
         this.source = source;
@@ -76,23 +77,24 @@ export class Effect {
     clone() {
         return new Effect({
             type: this.type,
-            value: this.value,
+            amount: this.amount,
             target: this.target,
             pick: this.pick,
             source: this.source
         })};
 
-    getValue() { return this.value; }
-    setValue(val) { this.value = val; }
+    getAmount() { return this.amount; }
+    getAmount(amount) { this.amount = amount; }
     getSource() { return this.source; }
-    setSource(val) { this.source = val; }
+    setSource(index) { this.source = index; }
     getType() { return this.type; }
     getTarget() { return this.target; }
-    needsCompute() { return typeof this.value == "function"; }
+    getPick() { return this.type; }
+    needsCompute() { return typeof this.amount == "function"; }
 }
 
 
-class Listener {
+export class Listener {
     constructor(condition, effect) {
         this.fn = fn;
     }
@@ -139,6 +141,7 @@ export class Time {
         this.clock = 0;
     }
 }
+
 
 export class Item {
     constructor({
@@ -211,7 +214,7 @@ export class Item {
 
     computeEffects(context = {}){
         /*
-        1. Calculate base value for effect
+        1. Calculate base amount for effect
         2. Apply modifiers to it
         3. Compute dependent bonus effects
         4. Apply modifiers to bonus effects
@@ -220,10 +223,10 @@ export class Item {
         this.baseEffects.forEach(base => {
             const eff = base.clone()
             const baseType = eff.getType();
-            const baseValue = eff.needsCompute() ? eff.getValue()(context) : eff.getValue();
-            const newValue = baseValue + (this.flatMods[baseType] ?? 0);
+            const baseAmount = eff.needsCompute() ? eff.getAmount()(context) : eff.getAmount();
+            const newAmount = baseAmount + (this.flatMods[baseType] ?? 0);
 
-            eff.setValue(newValue);
+            eff.setAmount(newAmount);
             effects[baseType] = eff;
         })
         Object.values(this.postMods).forEach(mod => mod(effects, this.flatMods));

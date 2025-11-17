@@ -1,10 +1,8 @@
 import { Effect, Item } from "./item";
-import { Manager } from "./itemManager";
+import { Context, Manager } from "./itemManager";
 
 let enemyHP = 10000;
-let context = {
-    enemyHP: enemyHP
-}
+let context = new Context()
 
 let boulder = new Item({
     id: 0, 
@@ -14,12 +12,10 @@ let boulder = new Item({
     clock: 0,
     baseEffects: [new Effect({
         type: effType.DAMAGE,
-        value: context => context.enemyHP,
+        value: context => context.enemyHp,
         target: targetType.ENEMY}
     )]
 })
-
-
 
 function testItem(){
     let result;
@@ -77,10 +73,11 @@ function testItem(){
 function testManager(){
     let items = [boulder];
     let manager = new Manager({
-        items: items
+        items: items,
+        context: context
     });
 
-    manager.simulate(context);
+    manager.simulate();
 }
 
 testManager();
