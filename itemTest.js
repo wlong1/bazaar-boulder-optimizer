@@ -26,14 +26,15 @@ let captainsWheel = new Item({
     baseEffects: [
         new Effect({
         type: effType.HASTE,
-        amount: 3,
+        amount: 3*10,
         target: targetType.LEFT}),
         new Effect({
         type: effType.HASTE,
-        amount: 3,
+        amount: 3*10,
         target: targetType.RIGHT}
     )]
 })
+
 
 function effFind(effects, type){
     return effects.find(e => e.getType() === type);
@@ -91,6 +92,14 @@ function testItem(){
     console.log(result);
 
 }
+
+/*  Boulder + No Passive Captain's Wheel Expected:
+5s - CW procs
+Boulder = 15 - 5 = 10
+10 - CW procs
+Boulder = 5 - 5, rest is hasted, average is 2.5s
+Expected: 12.5 s for proc
+*/
 
 function testManager(){
     let items = [boulder, captainsWheel];
