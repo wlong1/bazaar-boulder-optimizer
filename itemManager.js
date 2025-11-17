@@ -68,36 +68,49 @@ const effectHeroMap = {
 
 function nChooseK(arr, k) {
     const n = arr.length;
-    
     if (k <= 0) return [];
-    if (k >= n) return Array.from({ length: n }, (_, i) => i);
+    if (k >= n) {
+        const res = new Array(n);
+        for (let i = 0; i < n; i++) all[i] = i;
+            return res;
+    }
 
-    const exclude = k > n / 2;
-    const targetCount = exclude ? n - k : k;
-    
-    const taken = new Array(n).fill(false);
-    let count = 0;
-    
-    while (count < targetCount) {
-        const idx = Math.floor(Math.random() * n);
-        if (!taken[idx]) {
-            taken[idx] = true;
-            count++;
+
+    if (k <= (n >> 1)) {
+        // Partial Fisher-Yates
+        const res = new Array(n);
+        for (let i = 0; i < n; i++) res[i] = i;
+
+        for (let i = 0; i < k; i++) {
+        const j = i + Math.floor(Math.random() * (n - i));
+        const tmp = res[i];
+        res[i] = res[j];
+        res[j] = tmp;
         }
-    }
-    
-    const result = [];
-    if (exclude) {
-        for (let i = 0; i < n; i++) {
-            if (!taken[i]) result.push(i);
-        }
+
+        return res.slice(0, k);
     } else {
-        for (let i = 0; i < n; i++) {
-            if (taken[i]) result.push(i);
+        // Boolean-exclusion
+        const m = n - k;
+        const taken = new Array(n).fill(false);
+
+        let cnt = 0;
+        while (cnt < m) {
+            const idx = Math.floor(Math.random() * n);
+            if (!taken[idx]) {
+                taken[idx] = true;
+                cnt++;
+            }
         }
+
+        const result = new Array(k);
+        let ri = 0;
+        for (let i = 0; i < n && ri < k; i++) {
+            if (!taken[i]) result[ri++] = i;
+        }
+
+        return result;
     }
-    
-    return result;
 }
 
 
