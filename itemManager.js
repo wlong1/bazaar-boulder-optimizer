@@ -66,36 +66,39 @@ const effectHeroMap = {
 };
 
 
-function nChooseK(arr, k){
-    // Returns indices, not array elements
+function nChooseK(arr, k) {
     const n = arr.length;
+    
     if (k <= 0) return [];
+    if (k >= n) return Array.from({ length: n }, (_, i) => i);
 
-    if (k <= 6) {
-        const taken = new Array(n).fill(false);
-        const result = new Array(k);
-        let count = 0;
-        while (count < k) {
-            const idx = Math.floor(Math.random() * n);
-            if (!taken[idx]) {
-                taken[idx] = true;
-                result[count++] = idx;
-            }
+    const exclude = k > n / 2;
+    const targetCount = exclude ? n - k : k;
+    
+    const taken = new Array(n).fill(false);
+    let count = 0;
+    
+    while (count < targetCount) {
+        const idx = Math.floor(Math.random() * n);
+        if (!taken[idx]) {
+            taken[idx] = true;
+            count++;
         }
-        return result;
-    } else {
-        // Partial Fisher-Yates to avoid high collisions
-        const result = Array.from({ length: n }, (_, i) => i);
-        if (k == 10) return result;
-
-        for (let i = 0; i < k; i++) {
-            const j = i + Math.floor(Math.random() * (n - i));
-            [result[i], result[j]] = [result[j], result[i]];
-        }
-        return result.slice(0, k);
     }
+    
+    const result = [];
+    if (exclude) {
+        for (let i = 0; i < n; i++) {
+            if (!taken[i]) result.push(i);
+        }
+    } else {
+        for (let i = 0; i < n; i++) {
+            if (taken[i]) result.push(i);
+        }
+    }
+    
+    return result;
 }
-
 
 export class Manager {
     constructor({
