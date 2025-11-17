@@ -91,6 +91,10 @@ export class Effect {
     getTarget() { return this.target; }
     getPick() { return this.pick; }
     needsCompute() { return typeof this.amount == "function"; }
+
+    [Symbol.for('nodejs.util.inspect.custom')]() {
+        return `Effect(type=${this.type}, amount=${this.amount}, target=${this.target}, source=${this.source})`;
+    }
 }
 
 
@@ -194,7 +198,6 @@ export class Item {
     getTags(){ return this.itemTags.union(this.typeTags); }
 
     applyTime(type, amount){
-        console.log("APPLYING:", type, amount);
         switch (type) {
             case effType.HASTE:
                 this.time.addHaste(amount);

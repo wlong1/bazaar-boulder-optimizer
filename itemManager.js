@@ -174,8 +174,8 @@ export class Manager {
                 let results = item.tick(this.context)
                 if (results) {
                     for (const result of results){
-                    this.applyResult(result);
-                    itemUses.push([this.time, result])
+                        this.applyResult(result);
+                        itemUses.push([this.time, result])
                     }
                 }
             }
