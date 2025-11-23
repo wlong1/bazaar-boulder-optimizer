@@ -153,6 +153,8 @@ export class Manager {
         const pick = effect.getPick();
         const source = effect.getSource();
 
+        let applied = true;
+
         /*
         ENEMY: 10,
         SELF_HERO: 11,
@@ -169,6 +171,7 @@ export class Manager {
             switch (target) {
                 case targetType.SELF_ITEM:
                     this.items[source].applyTime(type, amount);
+                    applied = this.items[source] !== undefined;
                     break;
                 case targetType.RANDOM:
                     const arr = nChooseK(this.items, pick)
@@ -176,22 +179,30 @@ export class Manager {
                     break;
                 case targetType.LEFTMOST:
                     this.items[0].applyTime(type, amount);
+                    applied = this.items[0] !== undefined;
                     break;
                 case targetType.RIGHTMOST:
                     this.items[this.items.length - 1].applyTime(type, amount);
+                    applied = this.items.length > 0;
                     break;
                 case targetType.LEFT:
                     if (source - 1 >= 0){
                         this.items[source - 1]?.applyTime(type, amount);
+                    } else {
+                        applied = false;
                     }
                     break;
                 case targetType.RIGHT:
                     if (source + 1 < this.items.length){
                         this.items[source + 1]?.applyTime(type, amount);
+                    } else {
+                        applied = false;
                     }
                     break;
             }
         }
+
+        return applied;
     }
 
     checkDyn(effect){
@@ -240,15 +251,16 @@ export class Manager {
                 results = item.tick(this.context);
                 if (results) {
                     for (const result of results){
-                        this.applyResult(result);
-                        itemHistory.push([time, result])
+                        if (this.applyResult(result)) {
+                            itemHistory.push([time, result])
 
-                        effList.push(result);
-                        while (effList.length){
-                            const eff = effList.pop();
-                            const dynList = this.checkDyn(eff);
-                            if (Array.isArray(dynList) && dynList.length > 0) {
-                                for (const dynEff of dynList) effList.push(dynEff);
+                            effList.push(result);
+                            while (effList.length){
+                                const eff = effList.pop();
+                                const dynList = this.checkDyn(eff);
+                                if (Array.isArray(dynList) && dynList.length > 0) {
+                                    for (const dynEff of dynList) effList.push(dynEff);
+                                }
                             }
                         }
                     }
