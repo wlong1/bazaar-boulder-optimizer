@@ -28,11 +28,11 @@ let captainsWheel = new Item({
     baseEffects: [
         new Effect({
         type: effType.HASTE,
-        amount: 3*10,
+        amount: 1*10,
         target: targetType.LEFT}),
         new Effect({
         type: effType.HASTE,
-        amount: 3*10,
+        amount: 1*10,
         target: targetType.RIGHT}
     )],
     staticListeners: [
@@ -107,12 +107,17 @@ function testItem(){
 
 }
 
-/*  Boulder + No Passive Captain's Wheel Expected:
+/*  Boulder + Passive Captain's Wheel Expected:
+2.5s - CW procs
+Boulder = 20 - 1 = 19
 5s - CW procs
-Boulder = 15 - 5 = 10
-10 - CW procs
-Boulder = 5 - 5, rest is hasted, average is 2.5s
-Expected: 12.5 s for proc
+Boulder = 19 - 1 = 18
+7.5s - CW procs
+Boulder = 17
+10, boulder = 16
+12.5, boulder = 15
+15, boulder procs
+
 */
 
 function testManager(){

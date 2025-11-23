@@ -100,10 +100,9 @@ export class Effect {
 
 
 export class Listener {
-    constructor({condition, effect, source, limit = Infinity} = {}){
+    constructor({condition, effect, limit = Infinity} = {}){
         this.condition = condition;
         this.effect = effect;
-        this.source = source;
         this.limit = limit;
         this.count = 0;
     }
@@ -126,10 +125,9 @@ export class Listener {
 export class Time {
     // Cooldowns are marked in increments of 0.1s (10 per second)
     // Internal cooldowns are 0.2s (5 ticks per second)
-    // Let's just fold everything into the internal cd
     constructor(baseCooldown, clock, mods = []) {
         this.multiplier = 2;
-        this.tickPerPass = 2;
+        this.tickPerPass = 1;
         this.baseCooldown = baseCooldown * this.multiplier;   // To avoid 0.5's, just let's double it
         this.mods = mods;   // array of [type, value] mods
         this.cooldown = 0;
@@ -141,10 +139,10 @@ export class Time {
         this.updateTime();
     }
 
-    addHaste(amount){   this.haste += amount*2; }
-    addSlow(amount){    this.slow += amount*2; }
-    addFreeze(amount){  this.freeze += amount*2; }
-    addCharge(amount){  this.clock += amount*2; }
+    addHaste(amount){   this.haste += amount; }
+    addSlow(amount){    this.slow += amount; }
+    addFreeze(amount){  this.freeze += amount; }
+    addCharge(amount){  this.clock += amount; }
 
     updateTime(){
         let cooldown = this.baseCooldown;

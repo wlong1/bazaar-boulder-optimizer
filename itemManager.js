@@ -196,12 +196,30 @@ export class Manager {
 
     checkDyn(effect){
         const res = [];
-        for (const listener of this.listeners){
-            const eff = listener.check(effect, this.items, this.id);
-            if (eff != null) { res.push(eff); }
+        const stillActive = [];
+
+        for (const listener of this.listeners) {
+            const eff = listener.check(effect, this.items, effect.getSource());
+
+            if (eff === -1) {
+                this.doneListeners.push(listener);
+            } else {
+                stillActive.push(listener);
+
+                if (eff != null) {
+                    if (Array.isArray(eff)) {
+                        res.push(...eff);
+                    } else {
+                        res.push(eff);
+                    }
+                }
+            }
         }
+
+        this.listeners = stillActive;
         return res;
     }
+
 
     simulate(){
         const itemHistory = [];
