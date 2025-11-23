@@ -1,5 +1,5 @@
-import { effType, Effect, Item } from "./item";
-import { Context, Manager } from "./itemManager";
+import { effType, Effect, Item, Listener, tagType, itemType, modType } from "./item";
+import { Context, Manager, checkItemTags, checkTypeTags } from "./itemManager";
 
 let enemyHP = 10000;
 let context = new Context({enemyHp: enemyHP})
@@ -8,20 +8,22 @@ let boulder = new Item({
     id: 0, 
     name: 'Boulder',
     usable: true,
-    cooldown: 20*10,
+    cooldown: 20*5,
     clock: 0,
     baseEffects: [new Effect({
         type: effType.DAMAGE,
         amount: context => context.enemyHp,
         target: targetType.ENEMY}
-    )]
+    )],
+    size: 3,
+    typeTags: [tagType.WEAPON, tagType.RELIC]
 })
 
 let captainsWheel = new Item({
     id: 1, 
     name: "Captain's Wheel",
     usable: true,
-    cooldown: 5*10,
+    cooldown: 5*5,
     clock: 0,
     baseEffects: [
         new Effect({
@@ -32,7 +34,19 @@ let captainsWheel = new Item({
         type: effType.HASTE,
         amount: 3*10,
         target: targetType.RIGHT}
-    )]
+    )],
+    staticListeners: [
+        new Listener({
+            condition: (_, items, _2) => {
+                checkTypeTags(tagType.VEHICLE) || checkItemTags(itemType.LARGE)
+            },
+            effect: (_, items, source) => {
+                items[source].addTimeMod(modType.PERCENT, 0.5)
+            }
+        })
+    ],
+    size: 2,
+    typeTags: [tagType.AQUATIC, tagType.TOOL]
 })
 
 

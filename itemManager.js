@@ -113,6 +113,14 @@ function nChooseK(arr, k) {
     }
 }
 
+export function checkTypeTags(items, tag){
+    return items.some(item => item.getTypeTags().has(tag));
+}
+
+export function checkItemTags(items, tag){
+    return items.some(item => item.getItemTags().has(tag));
+}
+
 
 export class Manager {
     constructor({
@@ -132,7 +140,7 @@ export class Manager {
     }
 
     collectListeners(){
-        for (const item in this.items) {
+        for (const item of this.items) {
             this.listeners.push(...item.getDynListeners());
         }
     }

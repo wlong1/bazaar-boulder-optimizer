@@ -13,7 +13,7 @@ export const effType = Object.freeze({
     SLOW: 12,
     FREEZE: 13,
     CHARGE: 14,
-    FLY: 15
+    FLY: 15,
 });
 
 export const targetType = Object.freeze({
@@ -30,6 +30,37 @@ export const targetType = Object.freeze({
 export const modType = Object.freeze({
     FLAT: 0,
     PERCENT: 1
+})
+
+export const tagType = Object.freeze({
+    APPAREL: 0,
+    AQUATIC: 1,
+    CORE: 2,
+    DINOSAUR: 3,
+    DRAGON: 4,
+    DRONE: 5,
+    FOOD: 6,
+    FRIEND: 7,
+    LOOT: 8,
+    POTION: 9,
+    PROPERTY: 10,
+    RAY: 11,
+    REAGENT: 12,
+    RELIC: 13,
+    TECH: 14,
+    TOOL: 15,
+    TOY: 16,
+    VEHICLE: 17,
+    WEAPON: 18
+});
+
+export const itemType = Object.freeze({
+    SMALL: 20,
+    MEDIUM: 21,
+    LARGE: 22,
+    AMMO: 23,
+    LIFESTEAL: 24,
+    QUEST: 25
 })
 
 
@@ -69,7 +100,7 @@ export class Effect {
 
 
 export class Listener {
-    constructor({condition, effect, limit = 1} = {}){
+    constructor({condition, effect, limit = Infinity} = {}){
         this.condition = condition;
         this.effect = effect;
         this.limit = limit;
@@ -77,13 +108,16 @@ export class Listener {
     }
 
     reset(){ this.count = 0; }
+
     check(info, items, source){
-        if (count == 0){
+        if (this.count >= this.limit){
             return -1
         }
         if (this.condition(info, items, source)){
+            this.count += 1;
             return this.effect(info, items, source);
         }
+        return null;
     }
 }
 
@@ -107,23 +141,24 @@ export class Time {
     addCharge(amount){  this.clock += amount*2; }
 
     updateTime(){
-        let time = this.baseCooldown;
+        let cooldown = this.baseCooldown;
         for (const mod of this.mods) {
             const type = mod[0];
             const value = mod[1];
             if (type === modType.FLAT){
-                time += value;
+                cooldown += value;
             } else {
-                time *= value;
+                cooldown *= value;
             }
         }
-        this.cooldown = time;
+        this.cooldown = Math.floor(cooldown);
     }
 
     addMod(type, value){
         this.mods.push([type, value]);
         this.updateTime();
     }
+
     removeMod(type, value){
         const index = this.mods.findIndex(
             (mod) => mod[0] === type && mod[1] === value
@@ -174,7 +209,7 @@ export class Item {
         typeTags = new Set(),
         staticListeners = [],
         dynListeners = [],
-        size = null,
+        size = 1,
         random = 0,
         multis = 1
     } = {}) {
@@ -200,6 +235,7 @@ export class Item {
     this.dynListeners = dynListeners;
 
     this.checkStatic();
+    this.addSizeTag();
     };
 
     addFlatMod(type, mod){
@@ -214,12 +250,37 @@ export class Item {
     removePostMod(key){
         delete this.postMods[key];
     }
+    
+    setId(id){ this.id = id; }
+    getId(){ return this.id; }
     getSize(){ return this.size; }
     getMultis(){ return this.multis; }
     getTags(){ return new Set([...this.itemTags, ...this.typeTags]); }
     getItemTags(){ return this.itemTags; }
     getTypeTags(){ return this.typeTags; }
     getDynListeners(){ return this.dynListeners; }
+
+    addSizeTag(){
+        switch (this.size){
+            case 1:
+                this.itemTags.push(itemType.SMALL);
+                break;
+            case 2:
+                this.itemTags.push(itemType.MEDIUM);
+                break;
+            default:
+                this.itemTags.push(itemType.LARGE);
+                break;
+        }
+    }
+
+    addTimeMod(type, value){
+        this.time.addMod(type, value);
+    }
+
+    removeTimeMod(type, value){
+        this.time.removeMod(type, value);
+    }
 
     checkStatic(context, items){
         for (const listener of this.staticListeners) {
