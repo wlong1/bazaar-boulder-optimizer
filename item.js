@@ -234,7 +234,6 @@ export class Item {
     this.staticListeners = staticListeners;
     this.dynListeners = dynListeners;
 
-    this.checkStatic();
     this.addSizeTag();
     };
 
@@ -263,13 +262,13 @@ export class Item {
     addSizeTag(){
         switch (this.size){
             case 1:
-                this.itemTags.push(itemType.SMALL);
+                this.itemTags.add(itemType.SMALL);
                 break;
             case 2:
-                this.itemTags.push(itemType.MEDIUM);
+                this.itemTags.add(itemType.MEDIUM);
                 break;
             default:
-                this.itemTags.push(itemType.LARGE);
+                this.itemTags.add(itemType.LARGE);
                 break;
         }
     }

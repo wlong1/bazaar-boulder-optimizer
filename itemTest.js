@@ -16,7 +16,7 @@ let boulder = new Item({
         target: targetType.ENEMY}
     )],
     size: 3,
-    typeTags: [tagType.WEAPON, tagType.RELIC]
+    typeTags: new Set([tagType.WEAPON, tagType.RELIC])
 })
 
 let captainsWheel = new Item({
@@ -38,7 +38,7 @@ let captainsWheel = new Item({
     staticListeners: [
         new Listener({
             condition: (_, items, _2) => {
-                checkTypeTags(tagType.VEHICLE) || checkItemTags(itemType.LARGE)
+                checkTypeTags(items, tagType.VEHICLE) || checkItemTags(items, itemType.LARGE)
             },
             effect: (_, items, source) => {
                 items[source].addTimeMod(modType.PERCENT, 0.5)
@@ -46,7 +46,7 @@ let captainsWheel = new Item({
         })
     ],
     size: 2,
-    typeTags: [tagType.AQUATIC, tagType.TOOL]
+    typeTags: new Set([tagType.AQUATIC, tagType.TOOL])
 })
 
 

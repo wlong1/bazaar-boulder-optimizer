@@ -132,7 +132,6 @@ export class Manager {
         this.items = items;
         this.slots = slots;
         this.limit = limit;
-        this.time = 1;
         this.context = context;
         this.listeners = [];
 
@@ -206,16 +205,23 @@ export class Manager {
         const itemHistory = [];
         const sandstorm = 30*10;
         let effList = [];
-        let res = null;
+        let results = null;
         let victory = false;
+        let time = 0
+
+        for (const item of this.items){
+            item.checkStatic(this.context, items);
+        }
         
-        while (this.time <= this.limit && !victory){
+        while (time <= this.limit && !victory){
+            time += 1;
+
             for (const item of this.items){
-                let results = item.tick(this.context)
+                results = item.tick(this.context);
                 if (results) {
                     for (const result of results){
                         this.applyResult(result);
-                        itemHistory.push([this.time, result])
+                        itemHistory.push([time, result])
 
                         effList.push(result);
                         while (effList.length){
@@ -230,14 +236,13 @@ export class Manager {
             }
 
 
-            if (this.time > sandstorm){
-                this.context.damage(this.time - sandstorm);
+            if (time > sandstorm){
+                this.context.damage(time - sandstorm);
             }
 
-            victory = this.context.tick(this.time);
-            this.time += 1;
+            victory = this.context.tick(time);
         }
-        return [this.time, itemHistory];
+        return [time, itemHistory];
     }
 
 }
