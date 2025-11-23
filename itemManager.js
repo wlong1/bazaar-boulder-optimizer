@@ -71,7 +71,7 @@ function nChooseK(arr, k) {
     if (k <= 0) return [];
     if (k >= n) {
         const res = new Array(n);
-        for (let i = 0; i < n; i++) all[i] = i;
+        for (let i = 0; i < n; i++) res[i] = i;
             return res;
     }
 
@@ -126,6 +126,15 @@ export class Manager {
         this.limit = limit;
         this.time = 1;
         this.context = context;
+        this.listeners = [];
+
+        this.collectListeners();
+    }
+
+    collectListeners(){
+        for (const item in this.items) {
+            this.listeners.push(...item.getDynListeners());
+        }
     }
 
     applyResult(effect){
@@ -178,7 +187,7 @@ export class Manager {
 
     checkDyn(effect){
         const res = [];
-        for (const listener of this.dynListeners){
+        for (const listener of this.listeners){
             const eff = listener.check(effect, this.items, this.id);
             if (eff != null) { res.push(eff); }
         }
@@ -188,7 +197,7 @@ export class Manager {
     simulate(){
         const itemHistory = [];
         const sandstorm = 30*10;
-        let effMap = [];
+        let effList = [];
         let res = null;
         let victory = false;
         
@@ -200,10 +209,13 @@ export class Manager {
                         this.applyResult(result);
                         itemHistory.push([this.time, result])
 
-                        effMap.push(result);
-                        while (effMap.length){
-                            const res = this.checkDyn(effMap.pop());
-                            if (res != null) { effMap.push(res); }
+                        effList.push(result);
+                        while (effList.length){
+                            const eff = effList.pop();
+                            const dynList = this.checkDyn(eff);
+                            if (Array.isArray(dynList) && dynList.length > 0) {
+                                for (const dynEff of dynList) effList.push(dynEff);
+                            }
                         }
                     }
                 }

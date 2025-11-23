@@ -63,16 +63,27 @@ export class Effect {
     needsCompute(){ return typeof this.amount == "function"; }
 
     [Symbol.for('nodejs.util.inspect.custom')]() {
-        return `Effect(type=${this.type}, amount=${this.amount}, target=${this.target}, source=${this.source})`;
+        return `Effect(type=${this.type}, amount=${this.amount}, pick=${this.pick}, target=${this.target}, source=${this.source})`;
     }
 }
 
 
 export class Listener {
-    constructor({condition, effect} = {}){
+    constructor({condition, effect, limit = 1} = {}){
         this.condition = condition;
         this.effect = effect;
+        this.limit = limit;
+        this.count = 0;
+    }
 
+    reset(){ this.count = 0; }
+    check(info, items, source){
+        if (count == 0){
+            return -1
+        }
+        if (this.condition(info, items, source)){
+            return this.effect(info, items, source);
+        }
     }
 }
 
@@ -86,6 +97,8 @@ export class Time {
         this.haste = 0;
         this.slow = 0;
         this.freeze = 0;
+
+        this.updateTime();
     }
 
     addHaste(amount){   this.haste += amount*2; }
@@ -185,6 +198,8 @@ export class Item {
 
     this.staticListeners = staticListeners;
     this.dynListeners = dynListeners;
+
+    this.checkStatic();
     };
 
     addFlatMod(type, mod){

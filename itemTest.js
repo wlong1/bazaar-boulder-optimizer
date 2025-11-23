@@ -108,7 +108,7 @@ function testManager(){
         context: context
     });
 
-    res = manager.simulate();
+    const res = manager.simulate();
     console.log(res);
 }
 
