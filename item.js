@@ -1,38 +1,3 @@
-/*
-Needs:
-
-Index
-
-Acceptable Rarity
-Selected Rarity
-
-On use Types
-
-On use effect base
-On use effect extra
-
-Availbale enchants
-Selected enchant
-
-Base Modifiers
-Extra Modifiers
-
-Base Cooldown
-Current ticks
-
-Number of uses
-
-===============================
-
-
-On use:
-Iterate through base + extra:
-Apply relevant modifiers
-Add to result
-
-*/
-
-
 // Enum
 export const effType = Object.freeze({
     // Applied to characters
@@ -79,7 +44,7 @@ export class Effect {
         this.source = source;
     }
 
-    clone() {
+    clone(){
         return new Effect({
             type: this.type,
             amount: this.amount,
@@ -88,14 +53,14 @@ export class Effect {
             source: this.source
         })};
 
-    getAmount() { return this.amount; }
-    setAmount(amount) { this.amount = amount; }
-    getSource() { return this.source; }
-    setSource(index) { this.source = index; }
-    getType() { return this.type; }
-    getTarget() { return this.target; }
-    getPick() { return this.pick; }
-    needsCompute() { return typeof this.amount == "function"; }
+    getAmount(){ return this.amount; }
+    setAmount(amount){ this.amount = amount; }
+    getSource(){ return this.source; }
+    setSource(index){ this.source = index; }
+    getType(){ return this.type; }
+    getTarget(){ return this.target; }
+    getPick(){ return this.pick; }
+    needsCompute(){ return typeof this.amount == "function"; }
 
     [Symbol.for('nodejs.util.inspect.custom')]() {
         return `Effect(type=${this.type}, amount=${this.amount}, target=${this.target}, source=${this.source})`;
@@ -142,11 +107,11 @@ export class Time {
         this.cooldown = time;
     }
 
-    addMod(type, value) {
+    addMod(type, value){
         this.mods.push([type, value]);
         this.updateTime();
     }
-    removeMod(type, value) {
+    removeMod(type, value){
         const index = this.mods.findIndex(
             (mod) => mod[0] === type && mod[1] === value
         );
@@ -157,7 +122,7 @@ export class Time {
         }
     }
 
-    pass() {
+    pass(){
         let gain = 2;
 
         if (this.haste > 0){
@@ -177,7 +142,7 @@ export class Time {
         return (this.clock >= this.cooldown) && (this.freeze == 0);
     }
 
-    clear() {
+    clear(){
         this.clock = 0;
     }
 }
@@ -237,11 +202,11 @@ export class Item {
     getSize(){ return this.size; }
     getMultis(){ return this.multis; }
     getTags(){ return new Set([...this.itemTags, ...this.typeTags]); }
-    getItemTags() { return this.itemTags; }
-    getTypeTags() { return this.typeTags; }
-    getDynListeners() { return this.dynListeners; }
+    getItemTags(){ return this.itemTags; }
+    getTypeTags(){ return this.typeTags; }
+    getDynListeners(){ return this.dynListeners; }
 
-    checkStatic(context, items) {
+    checkStatic(context, items){
         for (const listener of this.staticListeners) {
             listener.check(context, items, this.id);
         }
@@ -290,13 +255,13 @@ export class Item {
         return effects;
     }
 
-    use(context) {
+    use(context){
         console.log(`${this.name} used`)
         this.time.clear();
         return this.computeEffects(context);
     }
 
-    tick(context) {
+    tick(context){
         if (!this.usable) {
             // console.log(`${this.name} is unusable`)
             return null
