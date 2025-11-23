@@ -62,6 +62,11 @@ export const targetType = Object.freeze({
     RIGHT: 17
 });
 
+export const modType = Object.freeze({
+    FLAT: 0,
+    PERCENT: 1
+})
+
 
 // Classes
 
@@ -99,17 +104,19 @@ export class Effect {
 
 
 export class Listener {
-    constructor(condition, effect) {
-        this.fn = fn;
-    }
+    constructor({condition, effect} = {}){
+        this.condition = condition;
+        this.effect = effect;
 
-    apply(effect) { return this.fn(effect); }
+    }
 }
 
 
 export class Time {
-    constructor(cooldown, clock) {
-        this.cooldown = cooldown * 2;   // To avoid 0.5's, just let's double it
+    constructor(baseCooldown, clock, mods = []) {
+        this.baseCooldown = baseCooldown * 2;   // To avoid 0.5's, just let's double it
+        this.mods = mods;   // array of [type, value] mods
+        this.cooldown = 0;
         this.clock = clock;
         this.haste = 0;
         this.slow = 0;
@@ -120,6 +127,35 @@ export class Time {
     addSlow(amount){    this.slow += amount*2; }
     addFreeze(amount){  this.freeze += amount*2; }
     addCharge(amount){  this.clock += amount*2; }
+
+    updateTime(){
+        let time = this.baseCooldown;
+        for (const mod of this.mods) {
+            const type = mod[0];
+            const value = mod[1];
+            if (type === modType.FLAT){
+                time += value;
+            } else {
+                time *= value;
+            }
+        }
+        this.cooldown = time;
+    }
+
+    addMod(type, value) {
+        this.mods.push([type, value]);
+        this.updateTime();
+    }
+    removeMod(type, value) {
+        const index = this.mods.findIndex(
+            (mod) => mod[0] === type && mod[1] === value
+        );
+
+        if (index !== -1) {
+            this.mods.splice(index, 1);
+            this.updateTime();
+        }
+    }
 
     pass() {
         let gain = 2;
@@ -158,6 +194,8 @@ export class Item {
         //scaleMods = [],
         itemTags = new Set(),
         typeTags = new Set(),
+        staticListeners = [],
+        dynListeners = [],
         size = null,
         random = 0,
         multis = 1
@@ -179,6 +217,9 @@ export class Item {
     this.size = size;
     this.random = random;
     this.multis = multis;
+
+    this.staticListeners = staticListeners;
+    this.dynListeners = dynListeners;
     };
 
     addFlatMod(type, mod){
@@ -195,7 +236,16 @@ export class Item {
     }
     getSize(){ return this.size; }
     getMultis(){ return this.multis; }
-    getTags(){ return this.itemTags.union(this.typeTags); }
+    getTags(){ return new Set([...this.itemTags, ...this.typeTags]); }
+    getItemTags() { return this.itemTags; }
+    getTypeTags() { return this.typeTags; }
+    getDynListeners() { return this.dynListeners; }
+
+    checkStatic(context, items) {
+        for (const listener of this.staticListeners) {
+            listener.check(context, items, this.id);
+        }
+    }
 
     applyTime(type, amount){
         switch (type) {

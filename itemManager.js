@@ -176,22 +176,39 @@ export class Manager {
         }
     }
 
+    checkDyn(effect){
+        const res = [];
+        for (const listener of this.dynListeners){
+            const eff = listener.check(effect, this.items, this.id);
+            if (eff != null) { res.push(eff); }
+        }
+        return res;
+    }
+
     simulate(){
-        const itemUses = [];
+        const itemHistory = [];
         const sandstorm = 30*10;
+        let effMap = [];
+        let res = null;
         let victory = false;
         
         while (this.time <= this.limit && !victory){
-
             for (const item of this.items){
                 let results = item.tick(this.context)
                 if (results) {
                     for (const result of results){
                         this.applyResult(result);
-                        itemUses.push([this.time, result])
+                        itemHistory.push([this.time, result])
+
+                        effMap.push(result);
+                        while (effMap.length){
+                            const res = this.checkDyn(effMap.pop());
+                            if (res != null) { effMap.push(res); }
+                        }
                     }
                 }
             }
+
 
             if (this.time > sandstorm){
                 this.context.damage(this.time - sandstorm);
@@ -200,7 +217,7 @@ export class Manager {
             victory = this.context.tick(this.time);
             this.time += 1;
         }
-        return [this.time, itemUses];
+        return [this.time, itemHistory];
     }
 
 }
