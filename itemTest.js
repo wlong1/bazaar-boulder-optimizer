@@ -8,7 +8,7 @@ let boulder = new Item({
     id: 0, 
     name: 'Boulder',
     usable: true,
-    cooldown: 20*5,
+    cooldown: 20*10,
     clock: 0,
     baseEffects: [new Effect({
         type: effType.DAMAGE,
@@ -23,7 +23,7 @@ let captainsWheel = new Item({
     id: 1, 
     name: "Captain's Wheel",
     usable: true,
-    cooldown: 5*5,
+    cooldown: 5*10,
     clock: 0,
     baseEffects: [
         new Effect({
@@ -38,7 +38,7 @@ let captainsWheel = new Item({
     staticListeners: [
         new Listener({
             condition: (_, items, _2) => {
-                checkTypeTags(items, tagType.VEHICLE) || checkItemTags(items, itemType.LARGE)
+                return checkTypeTags(items, tagType.VEHICLE) || checkItemTags(items, itemType.LARGE)
             },
             effect: (_, items, source) => {
                 items[source].addTimeMod(modType.PERCENT, 0.5)

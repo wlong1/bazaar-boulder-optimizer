@@ -134,11 +134,13 @@ export class Manager {
         this.limit = limit;
         this.context = context;
         this.listeners = [];
+        this.doneListeners = [];
 
         this.collectListeners();
     }
 
     collectListeners(){
+        this.listeners.length = 0;
         for (const item of this.items) {
             this.listeners.push(...item.getDynListeners());
         }
@@ -210,7 +212,7 @@ export class Manager {
         let time = 0
 
         for (const item of this.items){
-            item.checkStatic(this.context, items);
+            item.checkStatic(this.context, this.items);
         }
         
         while (time <= this.limit && !victory){
