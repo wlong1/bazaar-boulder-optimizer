@@ -1,4 +1,5 @@
 import { effType, targetType } from "./item";
+import { Heap } from 'https://cdn.jsdelivr.net/npm/heap-js@3.6.0/dist/heap.esm.js'
 
 
 export class Context {
@@ -164,9 +165,9 @@ function permutationApply(items, maxCapacity, fn) {
         return false;
     }
 
-    function dfs(fn, res) {
+    function dfs() {
         if (sequence.length > 0 && validSequence(sequence) && !canExtend()){
-            fn(sequence, res);
+            fn(sequence);
         }
 
         for (let i = 0; i < n; i++) {
@@ -184,7 +185,7 @@ function permutationApply(items, maxCapacity, fn) {
             sequence.push(i)
             curSize += size;
 
-            dfs(fn, res);
+            dfs(fn);
 
             usedMask &= ~bit;
             sequence.pop();
@@ -216,15 +217,19 @@ export class Manager {
         this.limit = limit;
         this.context = context;
         this.listeners = [];
-        this.doneListeners = [];
 
-        this.collectListeners();
+        this.reset();
     }
 
-    collectListeners(){
+    reset(){
         this.listeners.length = 0;
+
         for (const item of this.items) {
             this.listeners.push(...item.getDynListeners());
+            item.reset();
+        }
+        for (const listener of this.listeners){
+            listener.reset();
         }
     }
 
@@ -294,9 +299,7 @@ export class Manager {
         for (const listener of this.listeners) {
             const eff = listener.check(effect, this.items, effect.getSource());
 
-            if (eff === -1) {
-                this.doneListeners.push(listener);
-            } else {
+            if (eff != -1) {
                 stillActive.push(listener);
 
                 if (eff != null) {
@@ -313,8 +316,36 @@ export class Manager {
         return res;
     }
 
+    calculate(topK = 5){
+        const bestResults = new Heap((a, b) => b[0] - a[0]);    // maxHeap
+        const worstResults = new Heap((a, b) => a[0] - b[0]);   // minHeap
 
-    simulate(){
+        permutationApply(this.items, maxCapacity, (sequence) => {
+            const [time, data] = simulate(sequence);
+            
+            if (bestResults.size() < topK) {
+                bestResults.push([time, data]);
+            } else if (time < bestResults.peek()[0]) {
+                bestResults.pop();
+                bestResults.push([time, data]);
+            }
+            
+            if (worstResults.size() < topK) {
+                worstResults.push([time, data]);
+            } else if (time > worstResults.peek()[0]) {
+                worstResults.pop();
+                worstResults.push([time, data]);
+            }
+        });
+        
+        return {
+            top: bestResults.toArray().sort((a, b) => a[0] - b[0]),
+            bot: worstResults.toArray().sort((a, b) => a[0] - b[0])
+        };
+    }
+
+    simulate(sequence){
+        const itemList = sequence.map(index => this.items[index]);
         const itemHistory = [];
         const sandstorm = 30*10;
         let effList = [];
@@ -322,14 +353,15 @@ export class Manager {
         let victory = false;
         let time = 0
 
-        for (const item of this.items){
-            item.checkStatic(this.context, this.items);
+
+        for (const item of itemList){
+            item.checkStatic(this.context, itemList);
         }
         
         while (time <= this.limit && !victory){
             time += 1;
 
-            for (const item of this.items){
+            for (const item of itemList){
                 results = item.tick(this.context);
                 if (results) {
                     for (const result of results){
@@ -356,6 +388,8 @@ export class Manager {
 
             victory = this.context.tick(time);
         }
+        
+        this.reset();
         return [time, itemHistory];
     }
 

@@ -109,13 +109,17 @@ export class Listener {
 
     reset(){ this.count = 0; }
 
-    check(info, items, source){
+    check(context, effect, items, source){
         if (this.count >= this.limit){
             return -1
         }
-        if (this.condition(info, items, source)){
-            this.count += 1;
-            return this.effect(info, items, source);
+        if (this.condition(context, effect, items, source)){
+            let procs = 1;
+            if (effect != null) {
+                procs = math.min(effect.getPick(), this.limit - this.count);
+            }
+            this.count += procs;
+            return Array(procs).fill(this.effect(context, effect, items, source));
         }
         return null;
     }
@@ -196,6 +200,9 @@ export class Time {
 
     clear(){
         this.clock = 0;
+        this.haste = 0;
+        this.slow = 0;
+        this.freeze = 0;
     }
 }
 
@@ -205,6 +212,7 @@ export class Item {
         id = null,      // Item index
         name = '',
         usable = true,
+        symmetric = true,
         cooldown = 0,
         clock = 0,
         baseEffects = [],
@@ -220,6 +228,7 @@ export class Item {
 
     this.id = id;
     this.name = name;
+    this.symmetric = symmetric ? id : -1;
     this.usable = usable;
     this.time = new Time(cooldown, clock);
 
@@ -233,7 +242,10 @@ export class Item {
     this.addedTags = new Set();
     this.size = size;
     this.random = random;
+
     this.multis = multis;
+    this.queue = []
+    this.justUsed = false;
 
     this.staticListeners = staticListeners;
     this.dynListeners = dynListeners;
@@ -256,6 +268,7 @@ export class Item {
     
     setId(id){ this.id = id; }
     getId(){ return this.id; }
+    getSymmetric(){ return this.symmetric; }
     getSize(){ return this.size; }
     getMultis(){ return this.multis; }
     getTags(){ return new Set([...this.itemTags, ...this.typeTags]); }
@@ -310,6 +323,11 @@ export class Item {
         }
     }
 
+    reset(){
+        this.time.clear();
+        this.queue.length = 0;
+    }
+
     computeEffects(context = {}){
         /*
         1. Calculate base amount for effect
@@ -337,7 +355,8 @@ export class Item {
     use(context){
         console.log(`${this.name} used`)
         this.time.clear();
-        return this.computeEffects(context);
+        const res = this.computeEffects(context);
+        if (res) { this.queue.push(res); }
     }
 
     tick(context){
@@ -345,8 +364,16 @@ export class Item {
             // console.log(`${this.name} is unusable`)
             return null
         }
-        if (this.time.pass()){
-            return this.use(context);
+
+        if (this.time.pass()){ this.use(context); }
+        if (this.queue.length > 0){
+            if (this.justUsed){
+                this.justUsed = false;
+                return null;
+            } else {
+                this.justUsed = true;
+                return this.queue.pop()
+            }
         }
         // console.log(`${this.name} is not ready`)
         return null;
