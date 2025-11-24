@@ -113,6 +113,88 @@ function nChooseK(arr, k) {
     }
 }
 
+
+function permutationApply(items, maxCapacity, fn) {
+    if (items.length > 10) throw new Error(`Got ${items.length} items, expected <= 10`);
+    if (maxCapacity > 10) throw new Error(`Got ${maxCapacity} maxCapacity, expected <= 10`);
+
+    const ref = items.map(item => ({
+        id: item.getId(),
+        size: item.getSize(),
+        symmetric: item.getSymmetric()
+    }))
+    ref.sort((a, b) => { return a.id - b.id });
+
+    const n = ref.length;
+    const sequence = [];
+    let curSize = 0;
+    let usedMask = 0;   // bitmask
+
+    function validSequence(idSeq) {
+        // Check for mirrors
+        // We know if it is the mirrored version by comparing the ids
+        // Can strictly enforce the valid version to be smaller id first
+        const length = idSeq.length;
+        for (let i = 0; i < length; i++) {
+            const aId = ref[idSeq[i]].getId();
+            const mirrorIndex = ref[length - 1 - i];
+            const mirrorId = ref[mirrorIndex].getSymmetric();
+
+            if (mirrorId === -1) return true;   // Can't be mirrored
+
+            if (aId < mirrorId) return true;    // This sequence is prior
+            if (mirrorId < aId) return false;
+        }
+        return true;    // Palindrome
+    }
+
+    function canExtend() {
+        for (let i = 0; i < n; i++) {
+            const bit = 1 << i;
+            if (usedMask & bit) continue;
+
+            if (i > 0 && !(usedMask & (1 << (i - 1))) && ref[i].getId() === ref[i - 1].getId()) {
+                continue;
+            }
+
+            if (curSize + ref[i].size <= maxCapacity) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function dfs(fn, res) {
+        if (sequence.length > 0 && validSequence(sequence) && !canExtend()){
+            fn(sequence, res);
+        }
+
+        for (let i = 0; i < n; i++) {
+            const bit = 1 << i;
+            if (usedMask & bit) continue;
+            if (i > 0 && !(usedMask & (1 << (i - 1)) && ref[i].getId() === ref[i-1].getId())){
+                continue;
+            }
+
+            const size = ref[i].getSize();
+
+            if (curSize + size > maxCapacity) continue;
+
+            usedMask |= bit;
+            sequence.push(i)
+            curSize += size;
+
+            dfs(fn, res);
+
+            usedMask &= ~bit;
+            sequence.pop();
+            curSize -= size;
+        }
+    }
+
+}
+
+
 export function checkTypeTags(items, tag){
     return items.some(item => item.getTypeTags().has(tag));
 }
