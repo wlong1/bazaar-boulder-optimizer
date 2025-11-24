@@ -37,10 +37,10 @@ let captainsWheel = new Item({
     )],
     staticListeners: [
         new Listener({
-            condition: (_, items, _2) => {
+            condition: (context, effect, items, source) => {
                 return checkTypeTags(items, tagType.VEHICLE) || checkItemTags(items, itemType.LARGE)
             },
-            effect: (_, items, source) => {
+            effect: (context, effect, items, source) => {
                 items[source].addTimeMod(modType.PERCENT, 0.5)
             }
         })
@@ -127,7 +127,7 @@ function testManager(){
         context: context
     });
 
-    const res = manager.simulate();
+    const res = manager.calculate();
     console.log(res);
 }
 

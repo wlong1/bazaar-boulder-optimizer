@@ -116,7 +116,8 @@ export class Listener {
         if (this.condition(context, effect, items, source)){
             let procs = 1;
             if (effect != null) {
-                procs = math.min(effect.getPick(), this.limit - this.count);
+                console.log(effect);
+                procs = Math.min(effect.getPick(), this.limit - this.count);
             }
             this.count += procs;
             return Array(procs).fill(this.effect(context, effect, items, source));
@@ -300,7 +301,7 @@ export class Item {
 
     checkStatic(context, items){
         for (const listener of this.staticListeners) {
-            listener.check(context, items, this.id);
+            listener.check(context, null, items, this.id);
         }
     }
 

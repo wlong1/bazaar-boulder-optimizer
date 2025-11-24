@@ -137,9 +137,9 @@ function permutationApply(items, maxCapacity, fn) {
         // Can strictly enforce the valid version to be smaller id first
         const length = idSeq.length;
         for (let i = 0; i < length; i++) {
-            const aId = ref[idSeq[i]].getId();
-            const mirrorIndex = ref[length - 1 - i];
-            const mirrorId = ref[mirrorIndex].getSymmetric();
+            const aId = ref[idSeq[i]].id;
+            const mirrorIndex = idSeq[length - 1 - i];
+            const mirrorId = ref[mirrorIndex].symmetric;
 
             if (mirrorId === -1) return true;   // Can't be mirrored
 
@@ -154,7 +154,7 @@ function permutationApply(items, maxCapacity, fn) {
             const bit = 1 << i;
             if (usedMask & bit) continue;
 
-            if (i > 0 && !(usedMask & (1 << (i - 1))) && ref[i].getId() === ref[i - 1].getId()) {
+            if (i > 0 && !(usedMask & (1 << (i - 1))) && ref[i].id === ref[i - 1].id) {
                 continue;
             }
 
@@ -173,11 +173,11 @@ function permutationApply(items, maxCapacity, fn) {
         for (let i = 0; i < n; i++) {
             const bit = 1 << i;
             if (usedMask & bit) continue;
-            if (i > 0 && !(usedMask & (1 << (i - 1)) && ref[i].getId() === ref[i-1].getId())){
+            if (i > 0 && !(usedMask & (1 << (i - 1))) && ref[i].id === ref[i-1].id){
                 continue;
             }
 
-            const size = ref[i].getSize();
+            const size = ref[i].size;
 
             if (curSize + size > maxCapacity) continue;
 
@@ -192,6 +192,8 @@ function permutationApply(items, maxCapacity, fn) {
             curSize -= size;
         }
     }
+
+    dfs();
 
 }
 
@@ -297,7 +299,8 @@ export class Manager {
         const stillActive = [];
 
         for (const listener of this.listeners) {
-            const eff = listener.check(effect, this.items, effect.getSource());
+            const source = effect ? effect.getSource() : null;
+            const eff = listener.check(this.context, effect, this.items, source);
 
             if (eff != -1) {
                 stillActive.push(listener);
@@ -316,12 +319,12 @@ export class Manager {
         return res;
     }
 
-    calculate(topK = 5){
+    calculate(topK = 5, maxCapacity = 10){
         const bestResults = new Heap((a, b) => b[0] - a[0]);    // maxHeap
         const worstResults = new Heap((a, b) => a[0] - b[0]);   // minHeap
 
         permutationApply(this.items, maxCapacity, (sequence) => {
-            const [time, data] = simulate(sequence);
+            const [time, data] = this.simulate(sequence);
             
             if (bestResults.size() < topK) {
                 bestResults.push([time, data]);
@@ -388,7 +391,7 @@ export class Manager {
 
             victory = this.context.tick(time);
         }
-        
+
         this.reset();
         return [time, itemHistory];
     }
