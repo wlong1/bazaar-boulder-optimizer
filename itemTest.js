@@ -128,7 +128,12 @@ function testManager(){
     });
 
     const res = manager.calculate();
-    console.log(res);
+    console.log('top: [');
+    res.top.forEach(([time, seq]) => console.log(`  [${time}, [${seq.join(', ')}]],`));
+    console.log(']');
+    console.log('bot: [');
+    res.bot.forEach(([time, seq]) => console.log(`  [${time}, [${seq.join(', ')}]],`));
+    console.log(']');
 }
 
 testManager();
