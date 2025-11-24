@@ -325,19 +325,20 @@ export class Manager {
 
         permutationApply(this.items, maxCapacity, (sequence) => {
             const [time, data] = this.simulate(sequence);
+            const copy = sequence.slice()
             
             if (bestResults.size() < topK) {
-                bestResults.push([time, data]);
+                bestResults.push([time, copy]);
             } else if (time < bestResults.peek()[0]) {
                 bestResults.pop();
-                bestResults.push([time, data]);
+                bestResults.push([time, copy]);
             }
             
             if (worstResults.size() < topK) {
-                worstResults.push([time, data]);
+                worstResults.push([time, copy]);
             } else if (time > worstResults.peek()[0]) {
                 worstResults.pop();
-                worstResults.push([time, data]);
+                worstResults.push([time, copy]);
             }
         });
         
