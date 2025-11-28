@@ -135,7 +135,7 @@ export class Time {
         this.tickPerPass = 1;
         this.baseCooldown = baseCooldown * this.multiplier;   // To avoid 0.5's, just let's double it
         this.mods = mods;   // array of [type, value] mods
-        this.cooldown = 0;
+        this.cooldown = 1000*10;
         this.clock = clock;
         this.haste = 0;
         this.slow = 0;
@@ -284,6 +284,7 @@ export class Item {
     getItemTags(){ return this.itemTags; }
     getTypeTags(){ return this.typeTags; }
     getDynListeners(){ return this.dynListeners; }
+    isUsable(){ return this.usable; }
 
     addSizeTag(){
         switch (this.size){
@@ -361,6 +362,10 @@ export class Item {
         return effects;
     }
 
+    tick(){
+        return this.time.pass();
+    }
+
     use(context){
         //console.log(`${this.name} used`)
         this.time.clear();
@@ -370,22 +375,21 @@ export class Item {
 
     tick(context){
         if (!this.usable) {
-            // console.log(`${this.name} is unusable`)
-            return null
+            return false
         }
 
         if (this.time.pass()){ this.use(context); }
         if (this.justUsed){
             this.justUsed = false;
-            return null;
+            return false;
         } else {
-            if (this.queue.length > 0){
-                this.justUsed = true;
-                return this.queue.pop()
-            }
+            return this.queue.length > 0;
         }
-        // console.log(`${this.name} is not ready`)
-        return null;
+    }
+
+    draw(){
+        this.justUsed = true;
+        return this.queue.pop()
     }
 
 }

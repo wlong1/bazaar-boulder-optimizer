@@ -369,8 +369,10 @@ export class Manager {
 
     simulate(sequence){
         const itemList = sequence.map(index => this.items[index]);
+        const usable = [];
         const itemHistory = [];
         const sandstorm = 30*10;
+        const ready = []
         let effList = [];
         let results = null;
         let victory = false;
@@ -378,16 +380,25 @@ export class Manager {
 
 
         for (let i = 0; i < itemList.length; i++){
-            itemList[i].setPos(i);
-            itemList[i].checkStatic(this.context, itemList, i);
+            const item = itemList[i];
+            item.setPos(i);
+            item.checkStatic(this.context, itemList, i);
+            if (item.isUsable()){
+                usable.push(item);
+            }
         }
 
         
         while (time <= this.limit && !victory){
             time += 1;
+            ready.length = 0;
 
-            for (const item of itemList){
-                results = item.tick(this.context);
+            for (const item in usable){
+                if (item.tick(this.context)){ ready.push(item); }
+            }
+
+            for (const item of ready){
+                results = item.draw(this.context);
                 if (results) {
                     for (const result of results){
                         if (this.applyResult(result, itemList)) {

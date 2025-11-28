@@ -80,6 +80,24 @@ let rowboat = new Item({
     typeTags: new Set([tagType.AQUATIC, tagType.VEHICLE])
 })
 
+let starChart = new Item({
+    id: 0, 
+    name: 'Star Chart',
+    usable: false,
+    clock: 0,
+    staticListeners: [
+        new Listener({
+            condition: true,
+            effect: (context, effect, items, source) => {
+                items[source - 1]?.addTimeMod(modType.PERCENT, 0.2);
+                items[source + 1]?.addTimeMod(modType.PERCENT, 0.2);
+            }
+        })
+    ],
+    size: 2,
+    typeTags: new Set([tagType.AQUATIC, tagType.VEHICLE])
+})
+
 
 
 function effFind(effects, type){
@@ -148,6 +166,8 @@ function testItem(){
 9s - Rowboat; Boulder = 14
 10s - CW; Boulder = 13
 12s - Rowboat; Boulder = 12
+Boulder triggers on tick after
+
 */
 
 function testManager(){
@@ -158,10 +178,10 @@ function testManager(){
     });
 
 
-    let res = manager.simulate([1,0,2]);
+    let res = manager.simulate([0,1,2]);
     console.log(res);
 
-    res = manager.simulate([1,0,2]);
+    res = manager.simulate([0,1,2]);
     console.log(res);
 
     res = manager.calculate();
