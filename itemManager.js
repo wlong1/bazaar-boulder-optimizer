@@ -9,11 +9,24 @@ export class Context {
         selfHp = 10000,
         selfShield = 0
     } = {}){
+        this.enemyHpMax = enemyHp;
         this.enemyHp = enemyHp;
+        this.enemyStartShield = enemyShield;
         this.enemyShield = enemyShield;
         this.selfHpMax = selfHp;
         this.selfHpCur = selfHp;
+        this.selfShieldMax = selfShield
         this.selfShield = selfShield;
+        this.selfRegen = 0;
+        this.enemyBurn = 0;
+        this.enemyPoison = 0;
+    }
+
+    reset(){
+        this.enemyHp = this.enemyHpMax;
+        this.enemyShield = this.enemyStartShield;
+        this.selfHpCur = this.selfHpMax;
+        this.selfShield = this.selfShieldMax
         this.selfRegen = 0;
         this.enemyBurn = 0;
         this.enemyPoison = 0;
@@ -206,6 +219,11 @@ export function checkItemTags(items, tag){
     return items.some(item => item.getItemTags().has(tag));
 }
 
+export function countUniqueTags(items){
+    const allTags = items.flatMap(item => item.getTypeTags());
+    return new Set(allTags).size;
+}
+
 
 export class Manager {
     constructor({
@@ -224,6 +242,7 @@ export class Manager {
     }
 
     reset(){
+        this.context.reset();
         this.listeners.length = 0;
 
         for (const item of this.items) {
