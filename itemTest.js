@@ -1,5 +1,5 @@
 import { effType, Effect, Item, Listener, tagType, itemType, modType } from "./item";
-import { Context, Manager, checkItemTags, checkTypeTags } from "./itemManager";
+import { Context, Manager, checkItemTags, checkTypeTags, countUniqueTags } from "./itemManager";
 
 let enemyHP = 10000;
 let context = new Context({enemyHp: enemyHP})
@@ -48,6 +48,38 @@ let captainsWheel = new Item({
     size: 2,
     typeTags: new Set([tagType.AQUATIC, tagType.TOOL])
 })
+
+
+let rowboat = new Item({
+    id: 2, 
+    name: "Rowboat",
+    usable: true,
+    cooldown: 8*10,
+    clock: 0,
+    baseEffects: [
+        new Effect({
+        type: effType.CHARGE,
+        amount: 1*10,
+        target: targetType.LEFT}),
+        new Effect({
+        type: effType.CHARGE,
+        amount: 1*10,
+        target: targetType.RIGHT}
+    )],
+    staticListeners: [
+        new Listener({
+            condition: (context, effect, items, source) => {
+                return countUniqueTags(items) >= 5;
+            },
+            effect: (context, effect, items, source) => {
+                items[source].addTimeMod(modType.FLAT, 5)
+            }
+        })
+    ],
+    size: 2,
+    typeTags: new Set([tagType.AQUATIC, tagType.VEHICLE])
+})
+
 
 
 function effFind(effects, type){
@@ -117,17 +149,20 @@ Boulder = 17
 10, boulder = 16
 12.5, boulder = 15
 15, boulder procs
-
 */
 
 function testManager(){
-    let items = [boulder, captainsWheel];
+    let items = [boulder, captainsWheel, rowboat];
     let manager = new Manager({
         items: items,
         context: context
     });
 
-    const res = manager.calculate();
+
+    let res = manager.simulate([1,0,2]);
+    console.log(res);
+
+    res = manager.calculate();
     console.log('top: [');
     res.top.forEach(([time, seq]) => console.log(`  [${time}, [${seq.join(', ')}]],`));
     console.log(']');
