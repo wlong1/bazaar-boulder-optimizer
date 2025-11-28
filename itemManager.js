@@ -254,14 +254,12 @@ export class Manager {
         }
     }
 
-    applyResult(effect, itemList){
+    applyResult(effect, itemList, usable){
         const type = effect.getType();
         const amount = effect.getAmount();
         const target = effect.getTarget();
         const pick = effect.getPick();
         const source = effect.getSource();
-
-        let applied = true;
 
         /*
         ENEMY: 10,
@@ -273,44 +271,45 @@ export class Manager {
         LEFT: 16,
         RIGHT: 17
         */
+
+        const applyToItem = (item) => {
+            if (item && usable.includes(item)) {
+                item.applyTime(type, amount);
+                return true;
+            }
+            return false;
+        };
+
         if (target <= targetType.SELF_HERO ){ // SELF_HERO is 11, ENEMY is 10
             effectHeroMap[target][type](this.context, amount)
+            return true;
         } else {
             switch (target) {
                 case targetType.SELF_ITEM:
-                    itemList[source].applyTime(type, amount);
-                    applied = itemList[source] !== undefined;
-                    break;
+                    return applyToItem(itemList[source]);
+
                 case targetType.RANDOM:
-                    const arr = nChooseK(itemList, pick)
-                    arr.forEach(index => itemList[index].applyTime(type, amount));
-                    break;
+                    if (usable.length === 0) return false;
+                    const arr = nChooseK(usable, pick)
+                    arr.forEach(index => usable[index].applyTime(type, amount));
+                    return true;
+
                 case targetType.LEFTMOST:
-                    itemList[0].applyTime(type, amount);
-                    applied = itemList[0] !== undefined;
-                    break;
+                    return applyToItem(usableList[0]);
+
                 case targetType.RIGHTMOST:
-                    itemList[itemList.length - 1].applyTime(type, amount);
-                    applied = itemList.length > 0;
-                    break;
+                    return applyToItem(usableList[usableList.length - 1]);
+
                 case targetType.LEFT:
-                    if (source - 1 >= 0){
-                        itemList[source - 1]?.applyTime(type, amount);
-                    } else {
-                        applied = false;
-                    }
-                    break;
+                    return applyToItem(itemList[source - 1]);
+
                 case targetType.RIGHT:
-                    if (source + 1 < itemList.length){
-                        itemList[source + 1]?.applyTime(type, amount);
-                    } else {
-                        applied = false;
-                    }
-                    break;
+                    return applyToItem(itemList[source + 1]);
+
+                default:
+                    return false;
             }
         }
-
-        return applied;
     }
 
     checkDyn(effect){
@@ -401,7 +400,7 @@ export class Manager {
                 results = item.draw(this.context);
                 if (results) {
                     for (const result of results){
-                        if (this.applyResult(result, itemList)) {
+                        if (this.applyResult(result, itemList, usable)) {
                             itemHistory.push([time, result])
 
                             effList.push(result);
