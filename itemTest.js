@@ -140,15 +140,14 @@ function testItem(){
 }
 
 /*  Captain's Wheel + Boulder + Rowboat:
-2.5s - CW procs
-Boulder = 20 - 1 = 19
-5s - CW procs
-Boulder = 19 - 1 = 18
-7.5s - CW procs
-Boulder = 17
-10, boulder = 16
-12.5, boulder = 15
-15, boulder procs
+2.5s - CW procs; Boulder = 20 - 1 = 19
+3s - Rowboat procs; Boulder = 18
+5s - CW procs; Boulder = 18 - 1 = 17
+6s - Rowboat; Boulder = 16
+7.5s - CW procs; Boulder = 15
+9s - Rowboat; Boulder = 14
+10s - CW; Boulder = 13
+12s - Rowboat; Boulder = 12
 */
 
 function testManager(){

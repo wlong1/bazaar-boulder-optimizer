@@ -147,7 +147,7 @@ export class Time {
     addHaste(amount){   this.haste += amount; }
     addSlow(amount){    this.slow += amount; }
     addFreeze(amount){  this.freeze += amount; }
-    addCharge(amount){  this.clock += amount; }
+    addCharge(amount){  this.clock += amount * this.multiplier; }
 
     updateTime(){
         let cooldown = this.baseCooldown;
@@ -155,7 +155,7 @@ export class Time {
             const type = mod[0];
             const value = mod[1];
             if (type === modType.FLAT){
-                cooldown += value;
+                cooldown += value * this.multiplier;
             } else {
                 cooldown *= value;
             }
