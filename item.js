@@ -205,6 +205,11 @@ export class Time {
         this.slow = 0;
         this.freeze = 0;
     }
+
+    reset(){
+        this.clear();
+        this.mods = [];
+    }
 }
 
 
@@ -229,6 +234,7 @@ export class Item {
 
     this.id = id;
     this.name = name;
+    this.pos = -1;
     this.symmetric = symmetric ? id : -1;
     this.usable = usable;
     this.time = new Time(cooldown, clock);
@@ -269,6 +275,8 @@ export class Item {
     
     setId(id){ this.id = id; }
     getId(){ return this.id; }
+    setPos(pos){ this.pos = pos; }
+    getPos(){ return this.pos; }
     getSymmetric(){ return this.symmetric; }
     getSize(){ return this.size; }
     getMultis(){ return this.multis; }
@@ -299,9 +307,9 @@ export class Item {
         this.time.removeMod(type, value);
     }
 
-    checkStatic(context, items){
+    checkStatic(context, items, position){
         for (const listener of this.staticListeners) {
-            listener.check(context, null, items, this.id);
+            listener.check(context, null, items, position);
         }
     }
 
@@ -325,7 +333,7 @@ export class Item {
     }
 
     reset(){
-        this.time.clear();
+        this.time.reset();
         this.queue.length = 0;
     }
 
@@ -349,12 +357,12 @@ export class Item {
             effects.push(eff);
         })
         Object.values(this.postMods).forEach(mod => mod(effects, this.flatMods));
-        effects.forEach(eff => eff.setSource(this.id));
+        effects.forEach(eff => eff.setSource(this.pos));
         return effects;
     }
 
     use(context){
-        console.log(`${this.name} used`)
+        //console.log(`${this.name} used`)
         this.time.clear();
         const res = this.computeEffects(context);
         if (res) { this.queue.push(res); }
@@ -367,11 +375,11 @@ export class Item {
         }
 
         if (this.time.pass()){ this.use(context); }
-        if (this.queue.length > 0){
-            if (this.justUsed){
-                this.justUsed = false;
-                return null;
-            } else {
+        if (this.justUsed){
+            this.justUsed = false;
+            return null;
+        } else {
+            if (this.queue.length > 0){
                 this.justUsed = true;
                 return this.queue.pop()
             }

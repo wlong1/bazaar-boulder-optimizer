@@ -72,7 +72,7 @@ let rowboat = new Item({
                 return countUniqueTags(items) >= 5;
             },
             effect: (context, effect, items, source) => {
-                items[source].addTimeMod(modType.FLAT, 5)
+                items[source].addTimeMod(modType.FLAT, -5*10)
             }
         })
     ],
@@ -139,7 +139,7 @@ function testItem(){
 
 }
 
-/*  Boulder + Passive Captain's Wheel Expected:
+/*  Captain's Wheel + Boulder + Rowboat:
 2.5s - CW procs
 Boulder = 20 - 1 = 19
 5s - CW procs
@@ -160,6 +160,9 @@ function testManager(){
 
 
     let res = manager.simulate([1,0,2]);
+    console.log(res);
+
+    res = manager.simulate([1,0,2]);
     console.log(res);
 
     res = manager.calculate();

@@ -220,7 +220,7 @@ export function checkItemTags(items, tag){
 }
 
 export function countUniqueTags(items){
-    const allTags = items.flatMap(item => item.getTypeTags());
+    const allTags = items.flatMap(item => [...item.getTypeTags()]);
     return new Set(allTags).size;
 }
 
@@ -254,7 +254,7 @@ export class Manager {
         }
     }
 
-    applyResult(effect){
+    applyResult(effect, itemList){
         const type = effect.getType();
         const amount = effect.getAmount();
         const target = effect.getTarget();
@@ -278,31 +278,31 @@ export class Manager {
         } else {
             switch (target) {
                 case targetType.SELF_ITEM:
-                    this.items[source].applyTime(type, amount);
-                    applied = this.items[source] !== undefined;
+                    itemList[source].applyTime(type, amount);
+                    applied = itemList[source] !== undefined;
                     break;
                 case targetType.RANDOM:
-                    const arr = nChooseK(this.items, pick)
-                    arr.forEach(index => this.items[index].applyTime(type, amount));
+                    const arr = nChooseK(itemList, pick)
+                    arr.forEach(index => itemList[index].applyTime(type, amount));
                     break;
                 case targetType.LEFTMOST:
-                    this.items[0].applyTime(type, amount);
-                    applied = this.items[0] !== undefined;
+                    itemList[0].applyTime(type, amount);
+                    applied = itemList[0] !== undefined;
                     break;
                 case targetType.RIGHTMOST:
-                    this.items[this.items.length - 1].applyTime(type, amount);
-                    applied = this.items.length > 0;
+                    itemList[itemList.length - 1].applyTime(type, amount);
+                    applied = itemList.length > 0;
                     break;
                 case targetType.LEFT:
                     if (source - 1 >= 0){
-                        this.items[source - 1]?.applyTime(type, amount);
+                        itemList[source - 1]?.applyTime(type, amount);
                     } else {
                         applied = false;
                     }
                     break;
                 case targetType.RIGHT:
-                    if (source + 1 < this.items.length){
-                        this.items[source + 1]?.applyTime(type, amount);
+                    if (source + 1 < itemList.length){
+                        itemList[source + 1]?.applyTime(type, amount);
                     } else {
                         applied = false;
                     }
@@ -377,9 +377,11 @@ export class Manager {
         let time = 0
 
 
-        for (const item of itemList){
-            item.checkStatic(this.context, itemList);
+        for (let i = 0; i < itemList.length; i++){
+            itemList[i].setPos(i);
+            itemList[i].checkStatic(this.context, itemList, i);
         }
+
         
         while (time <= this.limit && !victory){
             time += 1;
@@ -388,7 +390,7 @@ export class Manager {
                 results = item.tick(this.context);
                 if (results) {
                     for (const result of results){
-                        if (this.applyResult(result)) {
+                        if (this.applyResult(result, itemList)) {
                             itemHistory.push([time, result])
 
                             effList.push(result);
