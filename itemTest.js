@@ -180,7 +180,7 @@ Looks OK
 */
 
 function testManager(){
-    let items = [boulder, captainsWheel, rowboat];
+    let items = [boulder, starChart, rowboat];
     let manager = new Manager({
         items: items,
         context: context

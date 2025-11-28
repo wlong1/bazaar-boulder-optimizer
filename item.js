@@ -152,14 +152,17 @@ export class Time {
     updateTime(){
         let cooldown = this.baseCooldown;
         for (const mod of this.mods) {
-            const type = mod[0];
-            const value = mod[1];
-            if (type === modType.FLAT){
-                cooldown += value * this.multiplier;
-            } else {
-                cooldown *= value;
+            if (mod[0] === modType.FLAT) {
+                cooldown += mod[1] * this.multiplier;
             }
         }
+
+        for (const mod of this.mods) {
+            if (mod[0] !== modType.FLAT) {
+                cooldown *= mod[1];
+            }
+        }
+
         this.cooldown = Math.floor(cooldown);
     }
 
