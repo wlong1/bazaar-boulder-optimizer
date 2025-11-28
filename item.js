@@ -232,7 +232,8 @@ export class Item {
         dynListeners = [],
         size = 1,
         random = 0,
-        multis = 1
+        multi = 1,
+        ammo = -1
     } = {}) {
 
     this.id = id;
@@ -253,7 +254,8 @@ export class Item {
     this.size = size;
     this.random = random;
 
-    this.multis = multis;
+    this.multi = multi;
+    this.ammo = ammo;
     this.queue = 0;
     this.justUsed = false;
 
@@ -282,12 +284,16 @@ export class Item {
     getPos(){ return this.pos; }
     getSymmetric(){ return this.symmetric; }
     getSize(){ return this.size; }
-    getMultis(){ return this.multis; }
+    getMulti(){ return this.multi; }
     getTags(){ return new Set([...this.itemTags, ...this.typeTags]); }
     getItemTags(){ return this.itemTags; }
     getTypeTags(){ return this.typeTags; }
     getDynListeners(){ return this.dynListeners; }
     isUsable(){ return this.usable; }
+
+    hasAmmo(){
+        return this.ammo === -1 || this.ammo > 0;
+    }
 
     addSizeTag(){
         switch (this.size){
@@ -367,7 +373,8 @@ export class Item {
 
     use(){
         this.time.clear();
-        this.queue += 1;
+        this.queue += this.multi;
+        if (this.ammo > 0){ this.ammo -= 1; }
     }
 
     tick(){
@@ -375,7 +382,7 @@ export class Item {
             return false
         }
 
-        if (this.time.pass()){ this.use(); }
+        if (this.time.pass() && this.hasAmmo()){ this.use(); }
         if (this.justUsed){
             this.justUsed = false;
             return false;
