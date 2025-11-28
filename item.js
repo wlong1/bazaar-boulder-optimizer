@@ -201,13 +201,13 @@ export class Time {
 
     clear(){
         this.clock = 0;
-        this.haste = 0;
-        this.slow = 0;
-        this.freeze = 0;
     }
 
     reset(){
         this.clear();
+        this.haste = 0;
+        this.slow = 0;
+        this.freeze = 0;
         this.mods = [];
     }
 }

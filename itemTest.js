@@ -81,21 +81,21 @@ let rowboat = new Item({
 })
 
 let starChart = new Item({
-    id: 0, 
+    id: 3, 
     name: 'Star Chart',
     usable: false,
     clock: 0,
     staticListeners: [
         new Listener({
-            condition: true,
+            condition: (context, effect, items, source) => true,
             effect: (context, effect, items, source) => {
-                items[source - 1]?.addTimeMod(modType.PERCENT, 0.2);
-                items[source + 1]?.addTimeMod(modType.PERCENT, 0.2);
+                items[source - 1]?.addTimeMod(modType.PERCENT, 0.8);
+                items[source + 1]?.addTimeMod(modType.PERCENT, 0.8);
             }
         })
     ],
     size: 2,
-    typeTags: new Set([tagType.AQUATIC, tagType.VEHICLE])
+    typeTags: new Set([tagType.RELIC, tagType.TOOL])
 })
 
 
@@ -168,6 +168,15 @@ function testItem(){
 12s - Rowboat; Boulder = 12
 Boulder triggers on tick after
 
+
+Boulder, CW, RB:
+25 CW,
+26 RB hasted 26
+27 - 28; 28 - 30, RB Ready, fires at 28, 0
+29 - 2; 30 - 4; 31 - 6; 32 - 8; 34 - 10; 35 - 12; 36 - 14 Haste is over
+40 CW, RB Expected: 40 - 35 = 5, 5 + 14 = 19 RB
+41 - 21; 42 - 23; 43 - 25; 44 - 27; 45 - 29; 46 - 31; RB fires at 46
+Looks OK
 */
 
 function testManager(){
