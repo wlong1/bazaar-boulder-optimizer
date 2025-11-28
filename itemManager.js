@@ -393,8 +393,8 @@ export class Manager {
             time += 1;
             ready.length = 0;
 
-            for (const item in usable){
-                if (item.tick(this.context)){ ready.push(item); }
+            for (const item of usable){
+                if (item.tick()){ ready.push(item); }
             }
 
             for (const item of ready){

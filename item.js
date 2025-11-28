@@ -254,7 +254,7 @@ export class Item {
     this.random = random;
 
     this.multis = multis;
-    this.queue = []
+    this.queue = 0;
     this.justUsed = false;
 
     this.staticListeners = staticListeners;
@@ -338,7 +338,7 @@ export class Item {
 
     reset(){
         this.time.reset();
-        this.queue.length = 0;
+        this.queue = 0;
     }
 
     computeEffects(context = {}){
@@ -365,34 +365,30 @@ export class Item {
         return effects;
     }
 
-    tick(){
-        return this.time.pass();
-    }
-
-    use(context){
-        //console.log(`${this.name} used`)
+    use(){
         this.time.clear();
-        const res = this.computeEffects(context);
-        if (res) { this.queue.push(res); }
+        this.queue += 1;
     }
 
-    tick(context){
+    tick(){
         if (!this.usable) {
             return false
         }
 
-        if (this.time.pass()){ this.use(context); }
+        if (this.time.pass()){ this.use(); }
         if (this.justUsed){
             this.justUsed = false;
             return false;
         } else {
-            return this.queue.length > 0;
+            return this.queue > 0;
         }
     }
 
-    draw(){
+    draw(context){
         this.justUsed = true;
-        return this.queue.pop()
+        this.queue -= 1;
+        //console.log(`${this.name} used`);
+        return this.computeEffects(context);
     }
 
 }
