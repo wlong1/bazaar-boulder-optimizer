@@ -111,18 +111,32 @@ export class Listener {
 
     check(context, effect, items, source){
         if (this.count >= this.limit){
-            return -1
+            return -1;
         }
-        if (this.condition(context, effect, items, source)){
-            let procs = 1;
-            if (effect != null) {
-                console.log(effect);
-                procs = Math.min(effect.getPick(), this.limit - this.count);
+        if (!this.condition(context, effect, items, source)){
+            return null;
+        }
+
+        let procs = 1;
+        if (effect != null) {
+            procs = Math.min(effect.getPick(), this.limit - this.count);
+        }
+        this.count += procs;
+
+        const res = [];
+        for (let i = 0; i < procs; i++){
+            const produced = this.effect(context, effect, items, source);
+
+            if (Array.isArray(produced)){
+                for (const eff of produced){
+                    res.push(eff);
+                }
+            } else {
+                res.push(produced);
             }
-            this.count += procs;
-            return Array(procs).fill(this.effect(context, effect, items, source));
         }
-        return null;
+
+        return res.length > 0 ? res : null;
     }
 }
 
@@ -255,7 +269,8 @@ export class Item {
     this.random = random;
 
     this.multi = multi;
-    this.ammo = ammo;
+    this.ammoMax = ammo;
+    this.ammoCur = ammo;
     this.queue = 0;
     this.justUsed = false;
 
@@ -284,16 +299,19 @@ export class Item {
     getPos(){ return this.pos; }
     getSymmetric(){ return this.symmetric; }
     getSize(){ return this.size; }
+    setMulti(val){ this.multi = val; }
     getMulti(){ return this.multi; }
     getTags(){ return new Set([...this.itemTags, ...this.typeTags]); }
     getItemTags(){ return this.itemTags; }
     getTypeTags(){ return this.typeTags; }
     getDynListeners(){ return this.dynListeners; }
+    addDynListener( listen ){ this.dynListeners.push(listen); }
     isUsable(){ return this.usable; }
 
     hasAmmo(){
-        return this.ammo === -1 || this.ammo > 0;
+        return this.ammoCur === -1 || this.ammoCur > 0;
     }
+    getAmmo(){ return this.ammoCur; }
 
     addSizeTag(){
         switch (this.size){
@@ -345,6 +363,7 @@ export class Item {
     reset(){
         this.time.reset();
         this.queue = 0;
+        this.ammoCur = this.ammoMax;
     }
 
     computeEffects(context = {}){
@@ -374,7 +393,7 @@ export class Item {
     use(){
         this.time.clear();
         this.queue += this.multi;
-        if (this.ammo > 0){ this.ammo -= 1; }
+        if (this.ammoCur > 0){ this.ammoCur -= 1; }
     }
 
     tick(){

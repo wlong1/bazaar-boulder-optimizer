@@ -312,13 +312,14 @@ export class Manager {
         }
     }
 
-    checkDyn(effect){
+    checkDyn(effect, itemList){
         const res = [];
         const stillActive = [];
+        const source = effect ? effect.getSource() : null;
 
         for (const listener of this.listeners) {
-            const source = effect ? effect.getSource() : null;
-            const eff = listener.check(this.context, effect, this.items, source);
+            
+            const eff = listener.check(this.context, effect, itemList, source);
 
             if (eff != -1) {
                 stillActive.push(listener);
@@ -406,9 +407,13 @@ export class Manager {
                             effList.push(result);
                             while (effList.length){
                                 const eff = effList.pop();
-                                const dynList = this.checkDyn(eff);
+                                const dynList = this.checkDyn(eff, itemList);
                                 if (Array.isArray(dynList) && dynList.length > 0) {
-                                    for (const dynEff of dynList) effList.push(dynEff);
+                                    for (const dynEff of dynList) {
+                                        if (dynEff != null && dynEff != -1) {
+                                            effList.push(dynEff);
+                                        }
+                                    }
                                 }
                             }
                         }
