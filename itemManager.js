@@ -1,5 +1,5 @@
-import { effType, targetType } from "./item";
-import { Heap } from 'https://cdn.jsdelivr.net/npm/heap-js@3.6.0/dist/heap.esm.js'
+import { effType, targetType } from "./item.js";
+import Heap from 'https://cdn.skypack.dev/heap-js@2.5.0';
 
 
 export class Context {

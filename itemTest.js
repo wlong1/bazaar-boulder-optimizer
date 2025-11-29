@@ -1,10 +1,21 @@
-import { effType, Effect, Item, Listener, tagType, itemType, modType } from "./item";
-import { Context, Manager, checkItemTags, checkTypeTags, countUniqueTags } from "./itemManager";
+import { effType, Effect, Item, Listener, targetType, tagType, itemType, modType } from "./item.js";
+import { Context, Manager, checkItemTags, checkTypeTags, countUniqueTags } from "./itemManager.js";
 
 
 function seqToNames(seq, items) {
     const idMap = new Map(items.map((item, index) => [index, item.getName()]));
     return seq.map(id => idMap.get(id));;
+}
+
+function saveData(data, runs){
+    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `runs${runs}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
 }
 
 
@@ -247,8 +258,9 @@ function testManager(){
 
 
     let res = 0;
+    let runs = 100;
 
-    res = manager.calculate();
+    res = manager.calculate(10, 10, 1000);
 
     console.log('Top sequences:');
     res.top.forEach(([time, seq]) => {
@@ -266,6 +278,16 @@ function testManager(){
     console.log(`Running top sequence ${JSON.stringify(seqToNames(top_sequence, items))}`);
     res = manager.run_sim(top_sequence, 100, true);
     console.log(res);
+
+    const tiebreaker_seq = [1, 3, 2, 0, 4];
+    console.log(`Running sequence ${JSON.stringify(seqToNames(tiebreaker_seq, items))}`);
+    
+    runs = 50000;
+    console.log(`${runs} runs:`)
+    res = manager.run_sim(tiebreaker_seq, runs, true);
+    console.log(res);
+
+    saveData(res, runs);
 }
 
 testManager();
