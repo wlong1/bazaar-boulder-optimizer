@@ -98,6 +98,57 @@ let starChart = new Item({
     typeTags: new Set([tagType.RELIC, tagType.TOOL])
 })
 
+let diveWeights = new Item({
+    id: 4, 
+    name: 'Dive Weights',
+    usable: true,
+    ammo: 4,
+    cooldown: 8*10,
+    clock: 0,
+    baseEffects: [
+        new Effect({
+        type: effType.HASTE,
+        amount: 1*10,
+        target: targetType.RANDOM})
+    ],
+    staticListeners: [
+        new Listener({
+            condition: (context, effect, items, source) => {
+                return items[source - 1]?.getTypeTags().has(tagType.AQUATIC);
+            },
+            effect: (context, effect, items, source) => {
+                items[source]?.addTimeMod(modType.FLAT, -1*10);
+            }
+        }),
+        new Listener({
+            condition: (context, effect, items, source) => {
+                return items[source + 1]?.getTypeTags().has(tagType.AQUATIC);
+            },
+            effect: (context, effect, items, source) => {
+                items[source]?.addTimeMod(modType.FLAT, -1*10);
+            }
+        }),
+        new Listener({
+            condition: (context, effect, items, source) => true
+            ,
+            effect:(context, effect, items, source) => {
+                items[source].setMulti(1 + items[source].getAmmo());
+            }
+        })
+    ],
+    size: 1,
+    typeTags: new Set([tagType.APPAREL, tagType.AQUATIC, tagType.TOOL])
+})
+
+diveWeights.addDynListener(new Listener({
+    condition: (context, effect, items, source) => {
+        return items[source].getId() === diveWeights.id
+    },
+    effect:(context, effect, items, source) => {
+        items[source].setMulti(1 + items[source].getAmmo());
+    }
+}));
+
 
 
 function effFind(effects, type){
@@ -180,7 +231,7 @@ Looks OK
 */
 
 function testManager(){
-    let items = [boulder, starChart, rowboat];
+    let items = [boulder, diveWeights, rowboat];
     let manager = new Manager({
         items: items,
         context: context
@@ -190,7 +241,7 @@ function testManager(){
     let res = manager.simulate([0,1,2]);
     console.log(res);
 
-    res = manager.simulate([0,1,2]);
+    res = manager.simulate([0,2,1]);
     console.log(res);
 
     res = manager.calculate();
