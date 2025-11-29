@@ -295,10 +295,10 @@ export class Manager {
                     return true;
 
                 case targetType.LEFTMOST:
-                    return applyToItem(usableList[0]);
+                    return applyToItem(usable[0]);
 
                 case targetType.RIGHTMOST:
-                    return applyToItem(usableList[usableList.length - 1]);
+                    return applyToItem(usable[usable.length - 1]);
 
                 case targetType.LEFT:
                     return applyToItem(itemList[source - 1]);
@@ -338,12 +338,12 @@ export class Manager {
         return res;
     }
 
-    calculate(topK = 5, maxCapacity = 10){
+    calculate(topK = 5, maxCapacity = 10, runs = 500){
         const bestResults = new Heap((a, b) => b[0] - a[0]);    // maxHeap
         const worstResults = new Heap((a, b) => a[0] - b[0]);   // minHeap
 
         permutationApply(this.items, maxCapacity, (sequence) => {
-            const [time, data] = this.simulate(sequence);
+            const time = this.run_sim(sequence, runs);
             const copy = sequence.slice()
             
             if (bestResults.size() < topK) {
@@ -363,21 +363,15 @@ export class Manager {
         
         return {
             top: bestResults.toArray().sort((a, b) => a[0] - b[0]),
-            bot: worstResults.toArray().sort((a, b) => a[0] - b[0])
+            bot: worstResults.toArray().sort((a, b) => b[0] - a[0])
         };
     }
 
-    simulate(sequence){
+    run_sim(sequence, runs = 500, all_results = false){
         const itemList = sequence.map(index => this.items[index]);
-        const usable = [];
-        const itemHistory = [];
-        const sandstorm = 30*10;
-        const ready = []
-        let effList = [];
-        let results = null;
-        let victory = false;
-        let time = 0
 
+        const usable = [];
+        let randomness = 0;
 
         for (let i = 0; i < itemList.length; i++){
             const item = itemList[i];
@@ -386,9 +380,32 @@ export class Manager {
             if (item.isUsable()){
                 usable.push(item);
             }
+            randomness += item.getRandom();
         }
 
-        
+        const n = randomness > 0 ? runs : 1;
+        const res = [];
+        let sum = 0;
+
+        for (let i = 0; i < n; i++){
+            const time = this.simulate(itemList, usable)[0];
+            res.push(time);
+            sum += time;
+        }
+
+        if (all_results) { return res; }
+        return Math.floor(sum/res.length);
+    }
+
+    simulate(itemList, usable){
+        const itemHistory = [];
+        const sandstorm = 30*10;
+        const ready = []
+        let effList = [];
+        let results = null;
+        let victory = false;
+        let time = 0
+
         while (time <= this.limit && !victory){
             time += 1;
             ready.length = 0;

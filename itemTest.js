@@ -1,6 +1,8 @@
 import { effType, Effect, Item, Listener, tagType, itemType, modType } from "./item";
 import { Context, Manager, checkItemTags, checkTypeTags, countUniqueTags } from "./itemManager";
 
+
+
 let enemyHP = 10000;
 let context = new Context({enemyHp: enemyHP})
 
@@ -103,6 +105,7 @@ let diveWeights = new Item({
     name: 'Dive Weights',
     usable: true,
     ammo: 4,
+    random: 1,
     cooldown: 8*10,
     clock: 0,
     baseEffects: [
@@ -231,18 +234,14 @@ Looks OK
 */
 
 function testManager(){
-    let items = [boulder, diveWeights, rowboat];
+    let items = [boulder, diveWeights, rowboat, starChart, captainsWheel];
     let manager = new Manager({
         items: items,
         context: context
     });
 
 
-    let res = manager.simulate([0,1,2]);
-    console.log(res);
-
-    res = manager.simulate([0,2,1]);
-    console.log(res);
+    let res = 0;
 
     res = manager.calculate();
     console.log('top: [');
@@ -251,6 +250,11 @@ function testManager(){
     console.log('bot: [');
     res.bot.forEach(([time, seq]) => console.log(`  [${time}, [${seq.join(', ')}]],`));
     console.log(']');
+
+    const top_sequence = res.top[0][1];
+    console.log(`Running top sequence ${top_sequence}`);
+    res = manager.run_sim(top_sequence, 100, true);
+    console.log(res);
 }
 
 testManager();
