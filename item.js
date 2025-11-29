@@ -308,6 +308,7 @@ export class Item {
     addDynListener( listen ){ this.dynListeners.push(listen); }
     isUsable(){ return this.usable; }
     getRandom(){ return this.random; }
+    getName(){ return this.name; }
 
     hasAmmo(){
         return this.ammoCur === -1 || this.ammoCur > 0;

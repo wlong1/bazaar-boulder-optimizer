@@ -2,6 +2,11 @@ import { effType, Effect, Item, Listener, tagType, itemType, modType } from "./i
 import { Context, Manager, checkItemTags, checkTypeTags, countUniqueTags } from "./itemManager";
 
 
+function seqToNames(seq, items) {
+    const idMap = new Map(items.map((item, index) => [index, item.getName()]));
+    return seq.map(id => idMap.get(id));;
+}
+
 
 let enemyHP = 10000;
 let context = new Context({enemyHp: enemyHP})
@@ -244,15 +249,21 @@ function testManager(){
     let res = 0;
 
     res = manager.calculate();
-    console.log('top: [');
-    res.top.forEach(([time, seq]) => console.log(`  [${time}, [${seq.join(', ')}]],`));
-    console.log(']');
-    console.log('bot: [');
-    res.bot.forEach(([time, seq]) => console.log(`  [${time}, [${seq.join(', ')}]],`));
-    console.log(']');
+
+    console.log('Top sequences:');
+    res.top.forEach(([time, seq]) => {
+        const names = seqToNames(seq, items);
+        console.log(`  [${time}, ${JSON.stringify(names)}]`)
+    });
+
+    console.log('Bot sequences:');
+    res.bot.forEach(([time, seq]) => {
+        const names = seqToNames(seq, items);
+        console.log(`  [${time}, ${JSON.stringify(names)}]`)
+    });
 
     const top_sequence = res.top[0][1];
-    console.log(`Running top sequence ${top_sequence}`);
+    console.log(`Running top sequence ${JSON.stringify(seqToNames(top_sequence, items))}`);
     res = manager.run_sim(top_sequence, 100, true);
     console.log(res);
 }
