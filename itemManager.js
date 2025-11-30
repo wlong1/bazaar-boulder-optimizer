@@ -341,10 +341,12 @@ export class Manager {
     calculate(topK = 5, maxCapacity = 10, runs = 500){
         const bestResults = new Heap((a, b) => b[0] - a[0]);    // maxHeap
         const worstResults = new Heap((a, b) => a[0] - b[0]);   // minHeap
+        let total = 0;
 
         permutationApply(this.items, maxCapacity, (sequence) => {
             const time = this.run_sim(sequence, runs);
             const copy = sequence.slice()
+            total += 1;
             
             if (bestResults.size() < topK) {
                 bestResults.push([time, copy]);
@@ -363,7 +365,8 @@ export class Manager {
         
         return {
             top: bestResults.toArray().sort((a, b) => a[0] - b[0]),
-            bot: worstResults.toArray().sort((a, b) => b[0] - a[0])
+            bot: worstResults.toArray().sort((a, b) => b[0] - a[0]),
+            total: total
         };
     }
 

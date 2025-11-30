@@ -262,6 +262,8 @@ function testManager(){
 
     res = manager.calculate(10, 10, 1000);
 
+    console.log(`Number of total sequences: ${res.total}`);
+
     console.log('Top sequences:');
     res.top.forEach(([time, seq]) => {
         const names = seqToNames(seq, items);
