@@ -370,10 +370,11 @@ export class Manager {
         };
     }
 
-    run_sim(sequence, runs = 500, all_results = false){
+    run_sim(sequence, runs = 500, all_results = false, hist_log = false){
         const itemList = sequence.map(index => this.items[index]);
 
         const usable = [];
+        const history = [];
         let randomness = 0;
 
         for (let i = 0; i < itemList.length; i++){
@@ -391,12 +392,16 @@ export class Manager {
         let sum = 0;
 
         for (let i = 0; i < n; i++){
-            const time = this.simulate(itemList, usable)[0];
+            const sim_res = this.simulate(itemList, usable);
+            const time = sim_res[0]
+            const hist = sim_res[1];
             res.push(time);
+            history.pish(hist);
             sum += time;
         }
 
         if (all_results) { return res; }
+        if (hist_log) { return history; }
         return Math.floor(sum/res.length);
     }
 
