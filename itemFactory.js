@@ -106,28 +106,31 @@ function makeEffectFunc(effectDesc) {
         case 'addTimeModSelf':
             return (context, effect, items, source) => {
                 const item = items[source];
-                if (!item) return;
+                if (!item) return null;
                 const mt = enumLookup(modType, effectDesc.modType);
                 item.addTimeMod(mt, effectDesc.value);
-        }   ;
+                return null;
+            };
 
         case 'addTimeModOther':
             return (context, effect, items, source) => {
-                const baseIndex = Number(source) || 0;
+                const baseIndex = (typeof source === 'number') ? source : 0;
                 const mt = enumLookup(modType, effectDesc.modType);
                 for (const offset of effectDesc.offsets || []) {
                     const neighbor = items[baseIndex + offset];
                     if (!neighbor) continue;
                     neighbor.addTimeMod(mt, effectDesc.value);
                 }
-        };
+                return null;
+            };
 
         case 'setMultiFromAmmo':
             return (context, effect, items, source) => {
                 const item = items[source];
-                if (!item) return;
+                if (!item) return null;
                 const ammo = (item.getAmmo && item.getAmmo()) || 0;
                 if (item.setMulti) item.setMulti(1 + ammo);
+                return null;
             };
 
         default:
@@ -179,7 +182,7 @@ export function loadItems(itemsData) {
             ammo: baseItem.ammo ?? -1
         });
 
-        created[baseItem.id] = item;
+        created.push(item);
     }
 
     return created;

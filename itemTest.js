@@ -54,19 +54,25 @@ function testManager(){
         console.log(`  [${time}, ${JSON.stringify(names)}]`)
     });
 
-    const top_sequence = res.top[0][1];
-    console.log(`Running top sequence ${JSON.stringify(seqToNames(top_sequence, items))}`);
-    res = manager.run_sim(top_sequence, 100, true);
-    console.log(res);
+    const top_sequence = [4, 1, 0, 2, 3];
+    const top_names = seqToNames(top_sequence, items);
+    console.log(`\nRunning top sequence: [${top_names.join(', ')}]`);
+    let historyRuns = manager.run_sim(top_sequence, 1, false, true);
+    let history = historyRuns[0];
+    console.log('Item history:');
+    history.forEach(([t, effect]) => {
+        console.log(`  t=${t}: type=${effect.getType()}, amount=${effect.getAmount()}, target=${effect.getTarget()}, source=${effect.getSource()}`);
+    });
 
-    const tiebreaker_seq = [1, 3, 2, 0, 4];
-    console.log(`Running sequence ${JSON.stringify(seqToNames(tiebreaker_seq, items))}`);
-    
-    runs = 50000;
-    console.log(`${runs} runs:`)
-    res = manager.run_sim(tiebreaker_seq, runs, true);
-    console.log(res);
-
+    const bot_sequence = res.bot[0][1];
+    const bot_names = seqToNames(bot_sequence, items);
+    console.log(`\nRunning bot sequence: [${bot_names.join(', ')}]`);
+    historyRuns = manager.run_sim(bot_sequence, 1, false, true);
+    history = historyRuns[0];
+    console.log('Item history:');
+    history.forEach(([t, effect]) => {
+        console.log(`  t=${t}: type=${effect.getType()}, amount=${effect.getAmount()}, target=${effect.getTarget()}, source=${effect.getSource()}`);
+    });
 }
 
 testManager();

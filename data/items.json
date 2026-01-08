@@ -101,6 +101,10 @@
       {
         "condition": { "kind": "otherHasTag", "offset": 1, "tag": "AQUATIC" },
         "effect": { "kind": "addTimeModSelf", "modType": "FLAT", "value": -10 }
+      },
+      {
+        "condition": { "kind": "always" },
+        "effect": { "kind": "setMultiFromAmmo" }
       }
     ],
     "dynListeners": [

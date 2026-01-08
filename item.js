@@ -127,12 +127,14 @@ export class Listener {
         for (let i = 0; i < procs; i++){
             const produced = this.effect(context, effect, items, source);
 
-            if (Array.isArray(produced)){
-                for (const eff of produced){
-                    res.push(eff);
+            if (produced != null) {
+                if (Array.isArray(produced)) {
+                    for (const eff of produced) {
+                        if (eff != null) res.push(eff);
+                    }
+                } else {
+                    res.push(produced);
                 }
-            } else {
-                res.push(produced);
             }
         }
 
@@ -147,7 +149,8 @@ export class Time {
     constructor(baseCooldown, clock, mods = []) {
         this.multiplier = 2;
         this.tickPerPass = 1;
-        this.baseCooldown = baseCooldown * this.multiplier;   // To avoid 0.5's, just let's double it
+        this.baseCooldown = baseCooldown * this.multiplier;
+        console.log(`Time constructor: baseCooldown param=${baseCooldown}, stored=${this.baseCooldown}`);
         this.mods = mods;   // array of [type, value] mods
         this.cooldown = 1000*10;
         this.clock = clock;
@@ -226,6 +229,7 @@ export class Time {
         this.slow = 0;
         this.freeze = 0;
         this.mods = [];
+        this.updateTime();
     }
 }
 

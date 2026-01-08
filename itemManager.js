@@ -146,21 +146,21 @@ function permutationApply(items, maxCapacity, fn) {
     let usedMask = 0;   // bitmask
 
     function validSequence(idSeq) {
-        // Check for mirrors
-        // We know if it is the mirrored version by comparing the ids
-        // Can strictly enforce the valid version to be smaller id first
         const length = idSeq.length;
+        const seqIds = new Array(length);
+        const revIds = new Array(length);
         for (let i = 0; i < length; i++) {
-            const aId = ref[idSeq[i]].id;
-            const mirrorIndex = idSeq[length - 1 - i];
-            const mirrorId = ref[mirrorIndex].symmetric;
-
-            if (mirrorId === -1) return true;   // Can't be mirrored
-
-            if (aId < mirrorId) return true;    // This sequence is prior
-            if (mirrorId < aId) return false;
+            seqIds[i] = ref[idSeq[i]].id;
+            revIds[i] = ref[idSeq[length - 1 - i]].id;
         }
-        return true;    // Palindrome
+
+        // Lexicographically compare seqIds with revIds
+        for (let i = 0; i < length; i++) {
+            if (seqIds[i] < revIds[i]) return true;
+            if (seqIds[i] > revIds[i]) return false;
+        }
+        // Sequences are identical (palindrome or identical ids in each pos)
+        return true;
     }
 
     function canExtend() {
@@ -200,7 +200,7 @@ function permutationApply(items, maxCapacity, fn) {
             sequence.push(i)
             curSize += size;
 
-            dfs(fn);
+            dfs();
 
             usedMask &= ~bit;
             sequence.pop();
@@ -374,6 +374,8 @@ export class Manager {
             randomness += item.getRandom();
         }
 
+        debugItemTimings(itemList);
+
         const n = randomness > 0 ? runs : 1;
         const res = [];
         let sum = 0;
@@ -383,7 +385,7 @@ export class Manager {
             const time = sim_res[0]
             const hist = sim_res[1];
             res.push(time);
-            history.pish(hist);
+            history.push(hist);
             sum += time;
         }
 
@@ -442,7 +444,21 @@ export class Manager {
         }
 
         this.reset();
+
         return [time, itemHistory];
     }
 
+}
+
+
+function debugItemTimings(itemList) {
+    console.log('=== Item Timing Debug ===');
+    itemList.forEach((item, index) => {
+        console.log(`\n[${index}] ${item.getName()}:`);
+        console.log(`Position: ${item.getPos()}`);
+        console.log(`Base Cooldown: ${item.time.baseCooldown / item.time.multiplier / 10}s`);
+        console.log(`Mods:`, item.time.mods);
+        console.log(`Final Cooldown: ${item.time.cooldown / item.time.multiplier / 10}s`);
+    });
+    console.log('===================\n');
 }
