@@ -146,12 +146,11 @@ export class Listener {
 export class Time {
     // Cooldowns are marked in increments of 0.1s (10 per second)
     // Internal cooldowns are 0.2s (5 ticks per second)
-    constructor(baseCooldown, clock, mods = []) {
+    constructor(baseCooldown, clock) {
         this.multiplier = 2;
         this.tickPerPass = 1;
         this.baseCooldown = baseCooldown * this.multiplier;
-        console.log(`Time constructor: baseCooldown param=${baseCooldown}, stored=${this.baseCooldown}`);
-        this.mods = mods;   // array of [type, value] mods
+        this.mods = [];     // array of [type, value] mods
         this.cooldown = 1000*10;
         this.clock = clock;
         this.haste = 0;
@@ -370,6 +369,7 @@ export class Item {
         this.time.reset();
         this.queue = 0;
         this.ammoCur = this.ammoMax;
+        this.justUsed = false;
     }
 
     computeEffects(context = {}){

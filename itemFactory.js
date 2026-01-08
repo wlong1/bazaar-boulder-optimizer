@@ -15,16 +15,18 @@ function enumLookup(enumObj, key) {
 }
 
 function buildAmount(amountSpec) {
-    if (!amountSpec) return () => 0;
+    if (amountSpec == null) return 0;
 
-    if (typeof amountSpec === 'number') return () => amountSpec;
+    if (typeof amountSpec === 'number') {
+        return amountSpec;
+    }
 
     if (amountSpec.kind === 'context') {
         const key = amountSpec.key;
-        return (context) => context?.[key];
+        return (context) => context?.[key] ?? 0;
     }
 
-    return () => 0;
+    throw new Error(`Unknown amount spec: ${JSON.stringify(amountSpec)}`);
 }
 
 function checkTypeTags(items, tag){

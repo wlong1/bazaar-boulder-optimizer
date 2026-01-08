@@ -224,21 +224,6 @@ export class Manager {
         this.limit = limit;
         this.context = context;
         this.listeners = [];
-
-        this.reset();
-    }
-
-    reset(){
-        this.context.reset();
-        this.listeners.length = 0;
-
-        for (const item of this.items) {
-            this.listeners.push(...item.getDynListeners());
-            item.reset();
-        }
-        for (const listener of this.listeners){
-            listener.reset();
-        }
     }
 
     applyResult(effect, itemList, usable){
@@ -374,17 +359,24 @@ export class Manager {
             randomness += item.getRandom();
         }
 
-        debugItemTimings(itemList);
-
         const n = randomness > 0 ? runs : 1;
         const res = [];
         let sum = 0;
 
-        for (let i = 0; i < n; i++){
-            const sim_res = this.simulate(itemList, usable);
-            const time = sim_res[0]
-            const hist = sim_res[1];
+        for (let runIndex = 0; runIndex < n; runIndex++) {
+            this.context.reset();
+            for (let i = 0; i < itemList.length; i++) {
+                const item = itemList[i];
+                item.reset()
+                item.checkStatic(this.context, itemList, i);
+            }
+
+            const [time, hist] = this.simulate(itemList, usable);
             res.push(time);
+
+            //debugItemTimings(itemList);
+            //console.log(`END TIME:${time}`)
+            
             history.push(hist);
             sum += time;
         }
@@ -402,6 +394,7 @@ export class Manager {
         let results = null;
         let victory = false;
         let time = 0
+        
 
         while (time <= this.limit && !victory){
             time += 1;
@@ -442,9 +435,7 @@ export class Manager {
 
             victory = this.context.tick(time);
         }
-
-        this.reset();
-
+        
         return [time, itemHistory];
     }
 
