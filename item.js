@@ -55,9 +55,9 @@ export const tagType = Object.freeze({
 });
 
 export const itemType = Object.freeze({
-    SMALL: 20,
-    MEDIUM: 21,
-    LARGE: 22,
+    SMALL: 1,
+    MEDIUM: 2,
+    LARGE: 3,
     AMMO: 23,
     LIFESTEAL: 24,
     QUEST: 25

@@ -132,11 +132,12 @@ function permutationApply(items, maxCapacity, fn) {
     if (items.length > 10) throw new Error(`Got ${items.length} items, expected <= 10`);
     if (maxCapacity > 10) throw new Error(`Got ${maxCapacity} maxCapacity, expected <= 10`);
 
-    const ref = items.map(item => ({
+    const ref = items.map((item, origIndex) => ({
         id: item.getId(),
         size: item.getSize(),
-        symmetric: item.getSymmetric()
-    }))
+        symmetric: item.getSymmetric(),
+        origIndex
+    }));
     ref.sort((a, b) => { return a.id - b.id });
 
     const n = ref.length;
@@ -180,7 +181,8 @@ function permutationApply(items, maxCapacity, fn) {
 
     function dfs() {
         if (sequence.length > 0 && validSequence(sequence) && !canExtend()){
-            fn(sequence);
+            const mappedSeq = sequence.map(idx => ref[idx].origIndex);
+            fn(mappedSeq);
         }
 
         for (let i = 0; i < n; i++) {
@@ -207,21 +209,6 @@ function permutationApply(items, maxCapacity, fn) {
     }
 
     dfs();
-
-}
-
-
-export function checkTypeTags(items, tag){
-    return items.some(item => item.getTypeTags().has(tag));
-}
-
-export function checkItemTags(items, tag){
-    return items.some(item => item.getItemTags().has(tag));
-}
-
-export function countUniqueTags(items){
-    const allTags = items.flatMap(item => [...item.getTypeTags()]);
-    return new Set(allTags).size;
 }
 
 

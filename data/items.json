@@ -1,0 +1,115 @@
+[
+  {
+    "id": 0,
+    "name": "Boulder",
+    "usable": true,
+    "symmetric": true,
+    "cooldown": 200,
+    "clock": 0,
+    "baseEffects": [
+      {
+        "type": "DAMAGE",
+        "amount": { "kind": "context", "key": "enemyHp" },
+        "target": "ENEMY"
+      }
+    ],
+    "size": 3,
+    "typeTags": ["WEAPON", "RELIC"]
+  },
+
+  {
+    "id": 1,
+    "name": "Captain's Wheel",
+    "usable": true,
+    "symmetric": true,
+    "cooldown": 50,
+    "clock": 0,
+    "baseEffects": [
+      { "type": "HASTE", "amount": 10, "target": "LEFT" },
+      { "type": "HASTE", "amount": 10, "target": "RIGHT" }
+    ],
+    "staticListeners": [
+      {
+        "condition": {
+          "kind": "or",
+          "clauses": [
+            { "kind": "anyHasTypeTag", "tag": "VEHICLE" },
+            { "kind": "anyHasItemType", "itemType": "LARGE" }
+          ]
+        },
+        "effect": { "kind": "addTimeModSelf", "modType": "PERCENT", "value": 0.5 }
+      }
+    ],
+    "size": 2,
+    "typeTags": ["AQUATIC", "TOOL"]
+  },
+
+  {
+    "id": 2,
+    "name": "Rowboat",
+    "usable": true,
+    "symmetric": true,
+    "cooldown": 80,
+    "clock": 0,
+    "baseEffects": [
+      { "type": "CHARGE", "amount": 10, "target": "LEFT" },
+      { "type": "CHARGE", "amount": 10, "target": "RIGHT" }
+    ],
+    "staticListeners": [
+      {
+        "condition": { "kind": "countUniqueTagsAtLeast", "min": 5 },
+        "effect": { "kind": "addTimeModSelf", "modType": "FLAT", "value": -50 }
+      }
+    ],
+    "size": 2,
+    "typeTags": ["AQUATIC", "VEHICLE"]
+  },
+
+  {
+    "id": 3,
+    "name": "Star Chart",
+    "usable": false,
+    "symmetric": true,
+    "clock": 0,
+    "staticListeners": [
+      {
+        "condition": { "kind": "always" },
+        "effect": { "kind": "addTimeModOther", "offsets": [-1, 1], "modType": "PERCENT", "value": 0.8 }
+      }
+    ],
+    "size": 2,
+    "typeTags": ["RELIC", "TOOL"]
+  },
+
+  {
+    "id": 4,
+    "name": "Dive Weights",
+    "usable": true,
+    "symmetric": true,
+    "ammo": 4,
+    "random": 1,
+    "cooldown": 80,
+    "clock": 0,
+    "baseEffects": [
+      { "type": "HASTE", "amount": 10, "target": "RANDOM" }
+    ],
+    "staticListeners": [
+      {
+        "condition": { "kind": "otherHasTag", "offset": -1, "tag": "AQUATIC" },
+        "effect": { "kind": "addTimeModSelf", "modType": "FLAT", "value": -10 }
+      },
+      {
+        "condition": { "kind": "otherHasTag", "offset": 1, "tag": "AQUATIC" },
+        "effect": { "kind": "addTimeModSelf", "modType": "FLAT", "value": -10 }
+      }
+    ],
+    "dynListeners": [
+      {
+        "condition": { "kind": "isItemId", "id": 4 },
+        "effect": { "kind": "setMultiFromAmmo" }
+      }
+    ],
+    "size": 1,
+    "typeTags": ["APPAREL", "AQUATIC", "TOOL"]
+  }
+]
