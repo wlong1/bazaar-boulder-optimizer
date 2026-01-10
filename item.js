@@ -109,6 +109,14 @@ export class Listener {
 
     reset(){ this.count = 0; }
 
+    clone() {
+        return new Listener({
+            condition: this.condition,
+            effect: this.effect,
+            limit: this.limit
+        });
+    }
+
     check(context, effect, items, source){
         if (this.count >= this.limit){
             return -1;
@@ -158,6 +166,17 @@ export class Time {
         this.freeze = 0;
 
         this.updateTime();
+    }
+
+    clone() {
+        const t = new Time(this.baseCooldown / this.multiplier, 0);
+        t.multiplier = this.multiplier;
+        t.tickPerPass = this.tickPerPass;
+
+        t.mods = this.mods.map(m => [...m]);
+        t.updateTime();
+
+        return t;
     }
 
     addHaste(amount){   this.haste += amount; }
@@ -261,7 +280,7 @@ export class Item {
     this.time = new Time(cooldown, clock);
 
     this.baseEffects = baseEffects;
-    //this.scaleMods = scaleMods;    // fn to apply to base effects, never need to be removed
+    this.baseFlatMods = {};
     this.flatMods = {};     // Flat modifiers i.e. { damage: +0, shield: -5 }
     this.postMods = {};     // fn to apply to extra effects, using dict for easy remove
 
@@ -283,10 +302,63 @@ export class Item {
     this.addSizeTag();
     };
 
-    addFlatMod(type, mod){
+    clone() {
+        const item = new Item({
+            id: this.id,
+            name: this.name,
+            usable: this.usable,
+            symmetric: this.symmetric !== -1,
+            cooldown: this.time.baseCooldown / this.time.multiplier,
+            clock: 0,
+
+            baseEffects: this.baseEffects.map(e => e.clone()),
+
+            itemTags: new Set(this.itemTags),
+            typeTags: new Set(this.typeTags),
+
+            staticListeners: this.staticListeners.map(l => l.clone()),
+            dynListeners: this.dynListeners.map(l => l.clone()),
+
+            size: this.size,
+            random: this.random,
+            multi: this.multi,
+            ammo: this.ammoMax
+        });
+
+        item.time = this.time.clone();
+
+        item.baseFlatMods = { ...this.baseFlatMods };
+        item.flatMods = { ...this.baseFlatMods };
+        item.postMods = { ...this.postMods };
+
+        item.queue = 0;
+        item.justUsed = false;
+        item.ammoCur = item.ammoMax;
+
+        return item;
+    }
+
+
+    addBaseFlatMod(type, mod){
+        this.baseFlatMods[type] = (this.flatMods[type] || 0) + mod;
+    }
+    subBaseFlatMod(type, mod){
+        if (type in this.baseFlatMods) {
+            this.flatMods[type] -= mod;
+        }
+    }
+    removeBaseFlatMod(type){
+        delete this.baseFlatMods[type];
+    }
+    addTempFlatMod(type, mod){
         this.flatMods[type] = (this.flatMods[type] || 0) + mod;
     }
-    removeFlatMod(type){
+    subTempFlatMod(type, mod){
+        if (type in this.flatMods) {
+            this.flatMods[type] -= mod;
+        }
+    }
+    removeTempFlatMod(type){
         delete this.flatMods[type];
     }
     addPostMod(key, mod){
@@ -370,6 +442,7 @@ export class Item {
         this.queue = 0;
         this.ammoCur = this.ammoMax;
         this.justUsed = false;
+        this.flatMods = { ...this.baseFlatMods };
     }
 
     computeEffects(context = {}){
