@@ -1,4 +1,4 @@
-export function initControls(root) {
+export function initControls(root, { baseItems, board, onBoardChange } = []) {
     const btnItems = root.querySelector('#control-items');
     const btnSkills = root.querySelector('#control-skills');
     const panelItems = root.querySelector('#control-items-panel');
@@ -24,43 +24,46 @@ export function initControls(root) {
     const itemsListSel = document.getElementById('items');
     const itemsListbox = document.querySelector('.listbox.items');
     const itemsCounter = document.querySelector('.space-counter');
-    initListSelection(itemsListSel, itemsListbox, itemsCounter, 20);
+    initListSelection(itemsListSel, itemsListbox, itemsCounter, 20, {
+        baseItems,
+        board,
+        onBoardChange
+    });
 
     const skillsListSel = document.getElementById('skills');
     const skillsListbox = document.querySelector('.listbox.skills');
-    initListSelection(skillsListSel, skillsListbox, null, 20);
+    initListSelection(skillsListSel, skillsListbox, null, 20, {});
 
 };
 
 
-function initListSelection(listSel, listbox, counterDisplay, maxSpace = 20) {
-    const spaceDisplay = counterDisplay ? counterDisplay.querySelector('#current-count') : null;
+function initListSelection(
+    listSel,
+    listbox,
+    counterDisplay,
+    maxSpace = 20,
+    { baseItems, board, onBoardChange } = {}
+) {
+    const spaceDisplay = counterDisplay
+        ? counterDisplay.querySelector('#current-count')
+        : null;
 
     listSel.addEventListener('click', e => {
         const li = e.target.closest('li');
         if (!li) return;
 
-        const value = li.dataset.value;
-        const text = li.textContent;
+        const id = li.dataset.value;
 
-        const existingBtn = listbox.querySelector(`button[value="${value}"]`);
-        if (existingBtn) {
-            existingBtn.remove();
-            updateSpace(spaceDisplay, -1);
-        } else {
-            if (spaceDisplay) {
-                const currentSpace = +spaceDisplay.textContent;
-                if (currentSpace + 1 > maxSpace) return;
-            }
+        const baseItem = baseItems.find(i => i.getId() === id);
+        if (!baseItem) return;
 
-            const btn = document.createElement('button');
-            btn.className = listbox.classList.contains('skills') ? 'list-skill' : 'list-item';
-            btn.value = value;
-            btn.textContent = text;
-            listbox.appendChild(btn);
+        if (spaceDisplay && board.length + 1 > maxSpace) return;
 
-            updateSpace(spaceDisplay, 1);
-        }
+        const instance = baseItem.clone();
+        board.push(instance);
+
+        updateSpace(spaceDisplay, 1);
+        onBoardChange(board);
     });
 }
 
