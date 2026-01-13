@@ -67,7 +67,6 @@ body, button, input, select {
 }
 
 .control-button, .listbox button {
-    width: 100%;
     padding: 6px 10px;
 
     background-color: var(--pale-wh);
@@ -75,6 +74,10 @@ body, button, input, select {
     border: none;
     border-radius: 8px;
     cursor: pointer;
+}
+
+.control-button {
+    width: 100%;
 }
 
 .control-button:hover {
@@ -142,11 +145,10 @@ body, button, input, select {
     flex: 1.2;
     background-color: var(--list-wh);
     border-radius: 10px;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .listbox button {
-    width: 100%;
     border-radius: 0px;
 }
 
@@ -158,6 +160,37 @@ body, button, input, select {
 .listbox button:active {
     background-color: var(--wh-color);
     color: var(--bg-color);
+}
+
+/* */
+/* Board items */
+/* */
+
+.list-item {
+    display: flex;
+    align-items: center;
+}
+
+.listbox .list-item-btn {
+    flex: 1;
+    width: auto;
+    text-align: left;
+    border-radius: 0;
+}
+
+.remove-btn {
+    flex: 0 0 auto;
+    width: 32px;
+    padding: 0;
+    border-radius: 0;
+    font-weight: bold;
+    cursor: pointer;
+    background-color: var(--pale-wh);
+}
+
+.remove-btn:hover {
+    background-color: var(--pale-wh-hi);
+    color: var(--highlight);
 }
 
 

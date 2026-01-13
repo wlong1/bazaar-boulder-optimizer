@@ -34,28 +34,62 @@ export function buildBoardAdd(listRoot, {
 
 export function buildBoardRemove(listboxRoot, { boardManager, counterRoot }) {
     listboxRoot.addEventListener('click', (e) => {
-        const btn = e.target.closest('button');
-        if (!btn) return;
-        const uid = btn.dataset.uid;
-        if (!uid) return;
+        const removeBtn = e.target.closest('.remove-btn');
+        if (removeBtn) {
+            const container = removeBtn.closest('.list-item');
+            if (!container) return;
+            const uid = container.dataset.uid;
+            if (!uid) return;
 
-        const removed = boardManager.removeByUid(uid);
-        if (!removed) {
+            const removed = boardManager.removeByUid(uid);
+            if (!removed) {
+                return;
+            }
+
+            container.remove();
+            updateCounter(counterRoot, boardManager.getCount());
             return;
         }
 
-        btn.remove();
+        const itemBtn = e.target.closest('.list-item-btn');
+        if (itemBtn) {
+            const container = itemBtn.closest('.list-item');
+            if (!container) return;
+            const uid = container.dataset.uid;
+            if (!uid) return;
 
-        updateCounter(counterRoot, boardManager.getCount());
+
+            const item = boardManager.getByUid(uid);
+
+            selectItem(item, uid);
+        }
     });
 }
 
+function selectItem(){
+    return;
+}
+
 export function addButton(listbox, instance) {
-    const btn = document.createElement('button');
-    btn.className = 'list-item';
-    btn.textContent = instance.getName();
-    btn.dataset.uid = instance._uid;
-    listbox.appendChild(btn);
+    const container = document.createElement('div');
+    container.className = 'list-item';
+    container.dataset.uid = instance._uid;
+
+    const itemBtn = document.createElement('button');
+    itemBtn.className = 'list-item-btn';
+    itemBtn.type = 'button';
+    itemBtn.textContent = instance.getName();
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'remove-btn';
+    removeBtn.type = 'button';
+    removeBtn.setAttribute('aria-label', 'Remove item');
+    removeBtn.innerHTML = '&times;'; // "x"
+
+    container.appendChild(itemBtn);
+    container.appendChild(removeBtn);
+
+    listbox.appendChild(container);
 }
 
 export function updateCounter(counter, n) {

@@ -26,6 +26,5 @@ buildBoardAdd(baseList, {
     maxSpace: 10
 });
 
-buildBoardRemove(listbox, { boardManager, counter: spaceCounter });
+buildBoardRemove(listbox, { boardManager, counterRoot: spaceCounter });
 
-updateCounter(spaceCounter, boardManager.getCount());

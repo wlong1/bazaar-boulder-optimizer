@@ -10,6 +10,10 @@ export const boardManager = {
         return instance;
     },
 
+    getByUid(uid) {
+        return board.find(i => i._uid === uid) || null;
+    },
+
     removeByUid(uid) {
         const idx = board.findIndex(i => i._uid === uid);
         if (idx === -1) return false;
